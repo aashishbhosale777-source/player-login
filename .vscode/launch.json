@@ -9,6 +9,13 @@
             "name": "Main",
             "request": "launch",
             "mainClass": "com.athlixcore.Main",
+            "projectName": "player-login_faa78af"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "com.athlixcore.Main",
             "projectName": "tournament_343d51cc"
         },
         {
