@@ -1,334 +1,483 @@
+
+
 package com.athlixcore.view.player.Academy;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 
-public class Academy_Dashboard extends VBox {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-    private BorderPane mainLayout;
-    private HBox tabsContainer;
-    private VBox contentContainer;
+public class Academy_Dashboard {
 
-    private boolean hasCoachAssigned = false; 
+    private StackPane rootContainer;
+    private FlowPane coachesGrid;
+    private List<Coach> allCoaches;
 
-    public Academy_Dashboard(BorderPane mainLayout) {
-        this.mainLayout = mainLayout;
-        this.setStyle("-fx-background-color: #f8fafc;");
+    // Static tracker for the purchased coach across views
+    public static String purchasedCoachName = null;
 
-        VBox innerContent = new VBox(25);
-        innerContent.setPadding(new Insets(30, 40, 30, 40));
+    // Toggle buttons for "View All Coaches" and "My Coaches"
+    private Button viewAllBtn;
+    private Button myCoachesBtn;
+    private boolean showingMyCoachesOnly = false;
 
-        VBox headerBox = buildAcademyHeader();
-
-        tabsContainer = new HBox(15);
-        tabsContainer.setAlignment(Pos.CENTER_LEFT);
-        tabsContainer.setPadding(new Insets(10, 0, 10, 0));
-
-        contentContainer = new VBox(25);
-        VBox.setVgrow(contentContainer, Priority.ALWAYS);
-
-        innerContent.getChildren().addAll(headerBox, tabsContainer, contentContainer);
-
-        ScrollPane scrollPane = new ScrollPane(innerContent);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0;");
-        scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
-        
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
-        this.getChildren().add(scrollPane);
-        
-        loadTabContent("Overview");
+    public Node getView() {
+        if (rootContainer == null) {
+            rootContainer = new StackPane();
+            initializeDummyData();
+            ScrollPane mainScrollPane = buildMainContent();
+            rootContainer.getChildren().add(mainScrollPane);
+        }
+        return rootContainer;
     }
 
-    private VBox buildAcademyHeader() {
-        VBox headerContainer = new VBox(0); 
-        headerContainer.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.06), 25, 0, 0, 10);");
+    private ScrollPane buildMainContent() {
+        VBox mainLayout = new VBox(25);
+        mainLayout.setPadding(new Insets(30, 30, 80, 30));
+        mainLayout.setStyle("-fx-background-color: #f8fafc;");
 
-        StackPane banner = new StackPane();
-        banner.setPrefHeight(160);
-        banner.setStyle("-fx-background-color: linear-gradient(to bottom right, #047857, #10b981); -fx-background-radius: 20 20 0 0;");
+        // --- 1. HEADER SECTION ---
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        VBox titleBox = new VBox(5);
+        Label pageTitle = new Label("🎓 Coaching Academy");
+        pageTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        Label pageSubtitle = new Label("Find world-class batting, bowling, fielding, and wicket-keeping coaches near you.");
+        pageSubtitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #64748b;");
+        titleBox.getChildren().addAll(pageTitle, pageSubtitle);
+
+        header.getChildren().add(titleBox);
+
+        // --- 2. STATISTICS OVERVIEW BLOCK ---
+        GridPane statsGrid = new GridPane();
+        statsGrid.setHgap(20);
+        statsGrid.setVgap(20);
         
-        Label bannerText = new Label("\ud83c\udfc6 Elite Strikers Cricket Academy");
-        bannerText.setStyle("-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 2);");
-        banner.getChildren().add(bannerText);
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(50);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(50);
+        statsGrid.getColumnConstraints().addAll(col1, col2);
 
-        HBox infoBox = new HBox(20);
-        infoBox.setAlignment(Pos.CENTER_LEFT);
-        infoBox.setPadding(new Insets(25, 30, 30, 30));
+        statsGrid.add(createStatCard("Total Coaches", "42", "🏆", 
+            "-fx-background-color: linear-gradient(to right, #f4f7ff, #eef1ff); -fx-border-color: #e2e8f0;"), 0, 0);
+            
+        statsGrid.add(createStatCard("My Bookings", purchasedCoachName != null ? "1 Active" : "0", "📋", 
+            "-fx-background-color: linear-gradient(to right, #f2fcf5, #e6f8ed); -fx-border-color: #d1fae5;"), 1, 0);
+            
+        statsGrid.add(createStatCard("Ongoing Sessions", "8", "▶", 
+            "-fx-background-color: linear-gradient(to right, #fdf4ff, #f3e8ff); -fx-border-color: #ede9fe;"), 0, 1);
+            
+        statsGrid.add(createStatCard("Completed", "156", "⏱", 
+            "-fx-background-color: linear-gradient(to right, #fffdf2, #fefce8); -fx-border-color: #fef08a;"), 1, 1);
 
-        Label logo = new Label("ES");
-        logo.setPrefSize(70, 70);
-        logo.setAlignment(Pos.CENTER);
-        logo.setStyle("-fx-background-color: #ecfdf5; -fx-text-fill: #047857; -fx-background-radius: 16; -fx-font-weight: bold; -fx-font-size: 24px; -fx-border-color: #d1fae5; -fx-border-radius: 16; -fx-border-width: 2;");
 
-        VBox textInfo = new VBox(8);
-        Label academyName = new Label("Elite Strikers Academy");
-        academyName.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        Label academyStats = new Label("\ud83d\udc65 85 Active Players  \u2022  \ud83c\udfd4\ufe0f 3 Turf Wickets  \u2022  \ud83d\udccd Maharashtra");
-        academyStats.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px; -fx-font-weight: bold;");
-        textInfo.getChildren().addAll(academyName, academyStats);
+        // --- 3. REFINE / FILTER BLOCK ---
+        HBox filterBlock = new HBox(20);
+        filterBlock.setAlignment(Pos.BOTTOM_LEFT);
+        filterBlock.setPadding(new Insets(20, 25, 20, 25));
+        filterBlock.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
+
+        VBox specBox = new VBox(8);
+        Label specLbl = new Label("Specialty");
+        specLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #475569;");
+        ComboBox<String> specialtyCombo = new ComboBox<>();
+        specialtyCombo.getItems().addAll("All", "Batting", "Bowling", "Fielding", "Wicket Keeping");
+        specialtyCombo.getSelectionModel().selectFirst();
+        specialtyCombo.setPrefWidth(160);
+        specialtyCombo.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 4; -fx-font-size: 14px;");
+        specBox.getChildren().addAll(specLbl, specialtyCombo);
+
+        VBox locBox = new VBox(8);
+        Label locLbl = new Label("Current Location");
+        locLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #475569;");
+        TextField locationField = new TextField();
+        locationField.setPromptText("e.g. Pune, Maharashtra");
+        locationField.setPrefWidth(250);
+        locationField.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 8; -fx-font-size: 14px;");
+        locBox.getChildren().addAll(locLbl, locationField);
+
+        VBox distBox = new VBox(8);
+        Label distLbl = new Label("Distance Around You");
+        distLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #475569;");
+        ComboBox<String> distanceCombo = new ComboBox<>();
+        distanceCombo.getItems().addAll("Any", "100 mtrs", "500 mtrs", "1 km", "5 km");
+        distanceCombo.getSelectionModel().select("100 mtrs");
+        distanceCombo.setPrefWidth(140);
+        distanceCombo.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 4; -fx-font-size: 14px;");
+        distBox.getChildren().addAll(distLbl, distanceCombo);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button enrollBtn = new Button("Enroll Now");
-        enrollBtn.setCursor(Cursor.HAND);
-        enrollBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 25; -fx-padding: 10 25; -fx-font-size: 14px;");
+        Button searchBtn = new Button("🔍 Refine Search");
+        searchBtn.setStyle("-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(59,130,246,0.3), 6, 0, 0, 2);");
         
-        Button contactBtn = new Button("Contact Coach");
-        contactBtn.setCursor(Cursor.HAND);
-        contactBtn.setStyle("-fx-background-color: white; -fx-text-fill: #047857; -fx-font-weight: bold; -fx-background-radius: 25; -fx-padding: 10 25; -fx-font-size: 14px; -fx-border-color: #a7f3d0; -fx-border-radius: 25;");
+        searchBtn.setOnAction(e -> {
+            filterCoaches(specialtyCombo.getValue(), distanceCombo.getValue());
+        });
 
-        infoBox.getChildren().addAll(logo, textInfo, spacer, contactBtn, enrollBtn);
-        headerContainer.getChildren().addAll(banner, infoBox);
+        filterBlock.getChildren().addAll(specBox, locBox, distBox, spacer, searchBtn);
 
-        return headerContainer;
+        // --- 4. SECTION HEADER & TOGGLE BUTTONS ---
+        HBox sectionHeader = new HBox(15);
+        sectionHeader.setAlignment(Pos.CENTER_LEFT);
+
+        Label sectionTitle = new Label("Recommended for You");
+        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #0f172a;");
+
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+
+        HBox toggleBar = new HBox(5);
+        toggleBar.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 8; -fx-padding: 3;");
+
+        viewAllBtn = new Button("View All Coaches");
+        myCoachesBtn = new Button("My Coaches");
+
+        styleToggleButton(viewAllBtn, true);
+        styleToggleButton(myCoachesBtn, false);
+
+        viewAllBtn.setOnAction(e -> {
+            showingMyCoachesOnly = false;
+            styleToggleButton(viewAllBtn, true);
+            styleToggleButton(myCoachesBtn, false);
+            filterCoaches(specialtyCombo.getValue(), distanceCombo.getValue());
+        });
+
+        myCoachesBtn.setOnAction(e -> {
+            showingMyCoachesOnly = true;
+            styleToggleButton(myCoachesBtn, true);
+            styleToggleButton(viewAllBtn, false);
+            filterCoaches(specialtyCombo.getValue(), distanceCombo.getValue());
+        });
+
+        toggleBar.getChildren().addAll(viewAllBtn, myCoachesBtn);
+        sectionHeader.getChildren().addAll(sectionTitle, headerSpacer, toggleBar);
+
+        // --- 5. COACHES GRID AREA ---
+        coachesGrid = new FlowPane();
+        coachesGrid.setHgap(25);
+        coachesGrid.setVgap(25);
+        coachesGrid.setAlignment(Pos.TOP_LEFT);
+
+        filterCoaches("All", "Any");
+
+        mainLayout.getChildren().addAll(header, statsGrid, filterBlock, sectionHeader, coachesGrid);
+
+        ScrollPane scrollPane = new ScrollPane(mainLayout);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
+        scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
+
+        return scrollPane;
     }
 
-    private void loadTabContent(String tabName) {
-        tabsContainer.getChildren().clear();
-        
-        Button overviewBtn = createTabButton("Overview", tabName.equals("Overview"));
-        Button rosterBtn = createTabButton("Squad & Roster", tabName.equals("Squad & Roster"));
-        Button coachesBtn = createTabButton("Coaching Staff", tabName.equals("Coaching Staff"));
-        Button facilitiesBtn = createTabButton("Facilities", tabName.equals("Facilities"));
-
-        overviewBtn.setOnAction(e -> loadTabContent("Overview"));
-        rosterBtn.setOnAction(e -> loadTabContent("Squad & Roster"));
-        coachesBtn.setOnAction(e -> loadTabContent("Coaching Staff"));
-        facilitiesBtn.setOnAction(e -> loadTabContent("Facilities"));
-
-        tabsContainer.getChildren().addAll(overviewBtn, rosterBtn, coachesBtn, facilitiesBtn);
-
-        contentContainer.getChildren().clear();
-
-        switch (tabName) {
-            case "Squad & Roster" -> contentContainer.getChildren().add(buildRosterTab());
-            case "Coaching Staff" -> {
-                if (hasCoachAssigned) {
-                    // --- WIRED THE BACK BUTTON ACTION HERE ---
-                    contentContainer.getChildren().add(new My_Coach_View(mainLayout, () -> {
-                        hasCoachAssigned = false; // Reset to unassigned
-                        loadTabContent("Coaching Staff"); // Reload the tab
-                    }));
-                } else {
-                    contentContainer.getChildren().add(new Coach_Discovery(mainLayout, () -> {
-                        hasCoachAssigned = true; 
-                        loadTabContent("Coaching Staff"); 
-                    }));
-                }
-            }
-            case "Facilities" -> contentContainer.getChildren().add(buildFacilitiesTab());
-            default -> contentContainer.getChildren().add(buildOverviewTab());
-        }
-    }
-
-    private Button createTabButton(String text, boolean isActive) {
-        Button btn = new Button(text);
-        btn.setCursor(Cursor.HAND);
-        if (isActive) {
-            btn.setStyle("-fx-background-color: #d1fae5; -fx-text-fill: #047857; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 20; -fx-padding: 8 22;");
+    private void styleToggleButton(Button btn, boolean active) {
+        if (active) {
+            btn.setStyle("-fx-background-color: white; -fx-text-fill: #1e293b; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 8 16; -fx-background-radius: 6; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 1); -fx-cursor: hand;");
         } else {
-            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 22;");
+            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
         }
-        return btn;
     }
 
-    private HBox buildOverviewTab() {
-        HBox split = new HBox(25);
-        
-        VBox leftSide = new VBox(20);
-        HBox.setHgrow(leftSide, Priority.ALWAYS);
-        
-        VBox aboutCard = new VBox(10);
-        aboutCard.setPadding(new Insets(25));
-        aboutCard.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e5e7eb; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
-        
-        Label aboutTitle = new Label("Academy Philosophy");
-        aboutTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #111827;");
-        Label aboutText = new Label("Elite Strikers Academy is dedicated to nurturing raw talent and transforming them into professional athletes. We focus on discipline, modern technique, and match-simulation training to prepare our players for top-tier competitive leagues.");
-        aboutText.setWrapText(true);
-        aboutText.setStyle("-fx-text-fill: #4b5563; -fx-font-size: 14px; -fx-line-spacing: 5px;");
-        aboutCard.getChildren().addAll(aboutTitle, aboutText);
+    private HBox createStatCard(String title, String value, String icon, String customStyle) {
+        HBox card = new HBox();
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPadding(new Insets(20, 25, 20, 25));
+        card.setMinHeight(100);
+        card.setStyle(customStyle + " -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
 
-        HBox statsRow = new HBox(20);
-        statsRow.getChildren().addAll(
-            createStatCard("Established", "2015", "#3b82f6"),
-            createStatCard("Tournaments Won", "14", "#f59e0b"),
-            createStatCard("Pro Players Produced", "26", "#10b981")
-        );
+        VBox leftContent = new VBox(8);
+        leftContent.setAlignment(Pos.CENTER_LEFT);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #475569;");
+        Label valueLbl = new Label(value);
+        valueLbl.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        leftContent.getChildren().addAll(titleLbl, valueLbl);
 
-        leftSide.getChildren().addAll(aboutCard, statsRow);
-
-        VBox rightSide = new VBox(15);
-        rightSide.setPrefWidth(320);
-        rightSide.setMinWidth(320);
-        rightSide.setPadding(new Insets(25));
-        rightSide.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e5e7eb; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
-
-        Label noticeTitle = new Label("Notice Board \ud83d\udccc");
-        noticeTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #111827;");
-
-        rightSide.getChildren().addAll(
-            noticeTitle,
-            createNoticeItem("Weekend Trials", "Under-19 trials this Saturday at 7 AM.", "#ef4444"),
-            createNoticeItem("Kit Distribution", "New match kits arriving next week. Clear your dues.", "#3b82f6"),
-            createNoticeItem("Match Canceled", "Friendly vs Spartans canceled due to rain.", "#64748b")
-        );
-
-        split.getChildren().addAll(leftSide, rightSide);
-        return split;
-    }
-
-    private VBox createStatCard(String title, String val, String color) {
-        VBox card = new VBox(5);
-        card.setPadding(new Insets(20));
-        HBox.setHgrow(card, Priority.ALWAYS);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e5e7eb; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
-        
-        Label t = new Label(title);
-        t.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px; -fx-font-weight: bold;");
-        Label v = new Label(val);
-        v.setStyle("-fx-text-fill: " + color + "; -fx-font-size: 24px; -fx-font-weight: bold;");
-        card.getChildren().addAll(t, v);
-        return card;
-    }
-
-    private VBox createNoticeItem(String title, String desc, String badgeColor) {
-        VBox item = new VBox(5);
-        item.setPadding(new Insets(10, 0, 10, 0));
-        item.setStyle("-fx-border-color: #f3f4f6; -fx-border-width: 0 0 1 0;");
-        
-        HBox top = new HBox(10);
-        Label tLbl = new Label(title);
-        tLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
-        Label dot = new Label("\u2022");
-        dot.setStyle("-fx-text-fill: " + badgeColor + "; -fx-font-size: 18px;");
-        top.getChildren().addAll(dot, tLbl);
-
-        Label dLbl = new Label(desc);
-        dLbl.setWrapText(true);
-        dLbl.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 13px; -fx-padding: 0 0 0 20;");
-
-        item.getChildren().addAll(top, dLbl);
-        return item;
-    }
-
-    private VBox buildRosterTab() {
-        VBox table = new VBox(0);
-        table.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e5e7eb; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
-        
-        HBox header = new HBox(10);
-        header.setPadding(new Insets(15, 20, 15, 20));
-        header.setStyle("-fx-border-color: #e5e7eb; -fx-border-width: 0 0 1 0;");
-        header.setAlignment(Pos.CENTER_LEFT);
-
-        header.getChildren().addAll(
-            createHeaderLabel("Player Name", 250), 
-            createHeaderLabel("Primary Role", 150), 
-            createHeaderLabel("Batch / Age Group", 150), 
-            createHeaderLabel("Status", 100)
-        );
-
-        table.getChildren().addAll(
-            header,
-            buildRosterRow("Vikram Malhotra", "All-Rounder", "Senior Pro (A-Team)", "Active", "#10b981"),
-            buildRosterRow("Arjun Khanna", "Fast Bowler", "Under-19", "Active", "#10b981"),
-            buildRosterRow("Siddharth Patel", "Wicketkeeper Batsman", "Senior Pro (A-Team)", "Injured", "#ef4444"),
-            buildRosterRow("Rohan Desai", "Top Order Batsman", "Under-16", "Active", "#10b981"),
-            buildRosterRow("Kabir Singh", "Left-Arm Spinner", "Under-19", "On Leave", "#f59e0b")
-        );
-
-        return table;
-    }
-
-    private Label createHeaderLabel(String text, double width) {
-        Label lbl = new Label(text);
-        lbl.setPrefWidth(width);
-        lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #6b7280; -fx-font-size: 12px;");
-        return lbl;
-    }
-
-    private HBox buildRosterRow(String name, String role, String batch, String status, String statusColor) {
-        HBox row = new HBox(10);
-        row.setPadding(new Insets(15, 20, 15, 20));
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-border-color: #f3f4f6; -fx-border-width: 0 0 1 0;");
-
-        HBox playerBox = new HBox(15);
-        playerBox.setPrefWidth(250);
-        playerBox.setAlignment(Pos.CENTER_LEFT);
-        Label avatar = new Label(name.substring(0, 1));
-        avatar.setPrefSize(35, 35);
-        avatar.setAlignment(Pos.CENTER);
-        avatar.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4338ca; -fx-background-radius: 17.5; -fx-font-weight: bold;");
-        Label nameLbl = new Label(name);
-        nameLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;");
-        playerBox.getChildren().addAll(avatar, nameLbl);
-
-        Label roleLbl = new Label(role);
-        roleLbl.setPrefWidth(150);
-        roleLbl.setStyle("-fx-text-fill: #4b5563; -fx-font-size: 13px;");
-
-        Label batchLbl = new Label(batch);
-        batchLbl.setPrefWidth(150);
-        batchLbl.setStyle("-fx-text-fill: #4b5563; -fx-font-size: 13px;");
-
-        Label statusBadge = new Label(status);
-        statusBadge.setPrefWidth(100);
-        statusBadge.setStyle("-fx-text-fill: " + statusColor + "; -fx-font-weight: bold; -fx-font-size: 13px;");
-
-        row.getChildren().addAll(playerBox, roleLbl, batchLbl, statusBadge);
-        return row;
-    }
-
-    private VBox buildFacilitiesTab() {
-        VBox box = new VBox(20);
-        Label title = new Label("Academy Training Facilities");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #111827;");
-        
-        Label desc = new Label("Our academy provides state-of-the-art infrastructure to ensure players get the best possible environment to train and recover.");
-        desc.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px;");
-
-        HBox facilitiesGrid = new HBox(20);
-        facilitiesGrid.getChildren().addAll(
-            createFacilityCard("\ud83c\udfd4\ufe0f", "3 Turf Wickets", "Match-simulation quality pitches."),
-            createFacilityCard("\u26be", "Bowling Machines", "High-speed pace and spin simulators."),
-            createFacilityCard("\ud83c\udfcb\ufe0f", "Strength & Conditioning", "Fully equipped modern gym for athletes."),
-            createFacilityCard("\ud83d\udcfa", "Video Analytics Room", "For post-match and swing technique reviews.")
-        );
-
-        box.getChildren().addAll(title, desc, facilitiesGrid);
-        return box;
-    }
-
-    private VBox createFacilityCard(String icon, String title, String desc) {
-        VBox card = new VBox(10);
-        card.setPadding(new Insets(20));
-        HBox.setHgrow(card, Priority.ALWAYS);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e5e7eb; -fx-border-radius: 12;");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Label iconLbl = new Label(icon);
-        iconLbl.setStyle("-fx-font-size: 32px;");
+        iconLbl.setStyle("-fx-font-size: 26px; -fx-text-fill: #1e293b;"); 
 
-        Label tLbl = new Label(title);
-        tLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #111827;");
-
-        Label dLbl = new Label(desc);
-        dLbl.setWrapText(true);
-        dLbl.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 13px;");
-
-        card.getChildren().addAll(iconLbl, tLbl, dLbl);
+        card.getChildren().addAll(leftContent, spacer, iconLbl);
         return card;
+    }
+
+    private void filterCoaches(String specialty, String distanceFilter) {
+        coachesGrid.getChildren().clear();
+
+        List<Coach> filteredList = allCoaches.stream().filter(c -> {
+            if (showingMyCoachesOnly) {
+                if (purchasedCoachName == null || !c.name.equals(purchasedCoachName)) {
+                    return false;
+                }
+            }
+
+            boolean matchesSpec = specialty.equals("All") || c.specialty.equals(specialty);
+            boolean matchesDist = true;
+            
+            if (distanceFilter.equals("100 mtrs") && c.distanceInMeters > 100) {
+                matchesDist = false;
+            } else if (distanceFilter.equals("500 mtrs") && c.distanceInMeters > 500) {
+                matchesDist = false;
+            } else if (distanceFilter.equals("1 km") && c.distanceInMeters > 1000) {
+                matchesDist = false;
+            } else if (distanceFilter.equals("5 km") && c.distanceInMeters > 5000) {
+                matchesDist = false;
+            }
+
+            return matchesSpec && matchesDist;
+        }).collect(Collectors.toList());
+
+        if (filteredList.isEmpty()) {
+            Label noResultLbl = new Label(showingMyCoachesOnly ? "You haven't purchased any coaches yet." : "No coaches found matching your criteria.");
+            noResultLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-padding: 40;");
+            coachesGrid.getChildren().add(noResultLbl);
+        } else {
+            for (Coach coach : filteredList) {
+                coachesGrid.getChildren().add(createCoachCard(coach));
+            }
+        }
+    }
+
+    private VBox createCoachCard(Coach coach) {
+        boolean isPurchased = (purchasedCoachName != null && purchasedCoachName.equals(coach.name));
+
+        VBox card = new VBox(12);
+        card.setAlignment(Pos.TOP_CENTER);
+        card.setPadding(new Insets(25, 20, 25, 20));
+        card.setPrefWidth(260);
+        
+        if (isPurchased) {
+            card.setStyle("-fx-background-color: #f0fdf4; -fx-background-radius: 12; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(16,185,129,0.25), 12, 0, 0, 4);");
+        } else {
+            card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;");
+        }
+
+        // Avatar
+        ImageView avatar = new ImageView();
+        try { 
+            Image img = new Image(coach.avatarUrl, 80, 80, true, true, true); 
+            avatar.setImage(img); 
+        } catch (Exception e) {}
+        avatar.setFitWidth(80);
+        avatar.setFitHeight(80);
+        avatar.setClip(new Circle(40, 40, 40));
+        avatar.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
+
+        // Name & Purchased Tag
+        Label nameLbl = new Label(coach.name);
+        nameLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+
+        VBox cardHeaderBox = new VBox(4, nameLbl);
+        cardHeaderBox.setAlignment(Pos.CENTER);
+
+        if (isPurchased) {
+            Label purchasedBadge = new Label("✓ PURCHASED COACH");
+            purchasedBadge.setStyle("-fx-background-color: #d1fae5; -fx-text-fill: #065f46; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 3 8; -fx-background-radius: 10;");
+            cardHeaderBox.getChildren().add(purchasedBadge);
+        }
+
+        // Specialty Badge
+        Label specBadge = new Label(coach.specialty);
+        switch (coach.specialty) {
+            case "Batting":
+                specBadge.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12;");
+                break;
+            case "Bowling":
+                specBadge.setStyle("-fx-background-color: #dcfce7; -fx-text-fill: #15803d; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12;");
+                break;
+            case "Fielding":
+                specBadge.setStyle("-fx-background-color: #fef9c3; -fx-text-fill: #a16207; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12;");
+                break;
+            case "Wicket Keeping":
+                specBadge.setStyle("-fx-background-color: #f3e8ff; -fx-text-fill: #7e22ce; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12;");
+                break;
+        }
+
+        Label locLbl = new Label("📍 " + coach.distanceText + " away");
+        locLbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
+
+        Label ratingLbl = new Label("⭐ " + coach.rating + " / 5.0");
+        ratingLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #f59e0b;");
+
+        // Action Button
+        Button actionBtn = new Button(isPurchased ? "Manage Sessions" : "View Profile");
+        actionBtn.setMaxWidth(Double.MAX_VALUE);
+        
+        String btnDefaultStyle = isPurchased ? 
+            "-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(16,185,129,0.4), 8, 0, 0, 4);" :
+            "-fx-background-color: linear-gradient(to right, #6366f1, #8b5cf6); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(99,102,241,0.4), 8, 0, 0, 4);";
+            
+        actionBtn.setStyle(btnDefaultStyle);
+
+        actionBtn.setOnAction(e -> {
+            if (isPurchased) {
+                // If purchased, clicking "Manage Sessions" opens the Daily Tasks view
+                rootContainer.getChildren().setAll(buildDailyTasksView(coach));
+            } else {
+                // Otherwise, opens the normal profile view
+                Coach_Discovery profilePage = new Coach_Discovery(
+                    coach.name, 
+                    coach.specialty, 
+                    coach.distanceText, 
+                    coach.rating, 
+                    coach.avatarUrl,
+                    () -> {
+                        rootContainer.getChildren().setAll(buildMainContent()); 
+                    }
+                );
+                rootContainer.getChildren().setAll(profilePage.getView());
+            }
+        });
+
+        card.getChildren().addAll(avatar, cardHeaderBox, specBadge, locLbl, ratingLbl, new Region(), actionBtn);
+        return card;
+    }
+
+    // --- DAILY TASKS & TRAINING SCHEDULE VIEW ---
+    private Node buildDailyTasksView(Coach coach) {
+        VBox container = new VBox(25);
+        container.setPadding(new Insets(30, 40, 80, 40));
+        container.setStyle("-fx-background-color: #f8fafc;");
+
+        // Top Navigation Bar (Back & View Profile Buttons)
+        HBox topNav = new HBox(15);
+        topNav.setAlignment(Pos.CENTER_LEFT);
+
+        Button backBtn = new Button("❮ Back to Academy");
+        backBtn.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 18; -fx-background-radius: 20; -fx-border-color: #e2e8f0; -fx-border-radius: 20; -fx-cursor: hand;");
+        backBtn.setOnAction(e -> rootContainer.getChildren().setAll(buildMainContent()));
+
+        Button viewProfileBtn = new Button("👤 View Coach Profile");
+        viewProfileBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 18; -fx-background-radius: 20; -fx-border-color: #cbd5e1; -fx-border-radius: 20; -fx-cursor: hand;");
+        viewProfileBtn.setOnAction(e -> {
+            Coach_Discovery profilePage = new Coach_Discovery(
+                coach.name, coach.specialty, coach.distanceText, coach.rating, coach.avatarUrl,
+                () -> rootContainer.getChildren().setAll(buildDailyTasksView(coach))
+            );
+            rootContainer.getChildren().setAll(profilePage.getView());
+        });
+
+        Region navSpacer = new Region();
+        HBox.setHgrow(navSpacer, Priority.ALWAYS);
+        topNav.getChildren().addAll(backBtn, navSpacer, viewProfileBtn);
+
+        // Header Banner for Daily Tasks
+        VBox banner = new VBox(10);
+        banner.setPadding(new Insets(30));
+        banner.setStyle("-fx-background-color: linear-gradient(to right, #0f172a, #1e293b); -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.2), 15, 0, 0, 5);");
+        
+        Label badge = new Label("ACTIVE TRAINING PROGRAM");
+        badge.setStyle("-fx-background-color: #1e293b; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 8;");
+        
+        Label title = new Label("Daily Tasks & Schedule with " + coach.name);
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;");
+        
+        Label subtitle = new Label("Complete your daily milestones below to maintain peak performance and track progress.");
+        subtitle.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14px;");
+        
+        banner.getChildren().addAll(badge, title, subtitle);
+
+        // Task Cards List Container
+        VBox taskList = new VBox(15);
+        taskList.getChildren().addAll(
+            createTaskCard("🌅 Morning Warmup & Mobility", "15 minutes dynamic stretching, shoulder rotations, and core activation.", "08:00 AM", true),
+            createTaskCard("🏏 Technical Net Practice", "Focus on defensive stance and power hitting against off-spin deliveries (50 balls).", "10:30 AM", false),
+            createTaskCard("💪 Strength & Conditioning", "Lower body focus: Squats (3 sets x 12 reps), lunges, and agility ladder drills.", "04:00 PM", false),
+            createTaskCard("📊 Video Analysis & Review", "Review match footage with " + coach.name + " to analyze trigger movements.", "07:00 PM", false)
+        );
+
+        container.getChildren().addAll(topNav, banner, taskList);
+
+        ScrollPane scrollPane = new ScrollPane(container);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
+        scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
+
+        return scrollPane;
+    }
+
+    private HBox createTaskCard(String taskTitle, String taskDesc, String timeSlot, boolean isCompleted) {
+        HBox card = new HBox(20);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPadding(new Insets(20, 25, 20, 25));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
+
+        CheckBox checkBox = new CheckBox();
+        checkBox.setSelected(isCompleted);
+        checkBox.setStyle("-fx-cursor: hand; -fx-font-size: 16px;");
+
+        VBox textContent = new VBox(4);
+        HBox.setHgrow(textContent, Priority.ALWAYS);
+        
+        Label titleLbl = new Label(taskTitle);
+        titleLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        
+        Label descLbl = new Label(taskDesc);
+        descLbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
+        descLbl.setWrapText(true);
+        
+        textContent.getChildren().addAll(titleLbl, descLbl);
+
+        Label timeLbl = new Label("⏰ " + timeSlot);
+        timeLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-background-color: #d1fae5; -fx-padding: 5 10; -fx-background-radius: 8;");
+
+        card.getChildren().addAll(checkBox, textContent, timeLbl);
+        return card;
+    }
+
+    private void initializeDummyData() {
+        allCoaches = new ArrayList<>();
+        allCoaches.add(new Coach("Rahul Dravid", "Batting", "80 mtrs", 80, 4.9, "https://randomuser.me/api/portraits/men/32.jpg"));
+        allCoaches.add(new Coach("Zaheer Khan", "Bowling", "95 mtrs", 95, 4.8, "https://randomuser.me/api/portraits/men/46.jpg"));
+        allCoaches.add(new Coach("MS Dhoni", "Wicket Keeping", "50 mtrs", 50, 5.0, "https://randomuser.me/api/portraits/men/22.jpg"));
+        allCoaches.add(new Coach("Rishabh Pant", "Wicket Keeping", "90 mtrs", 90, 4.8, "https://randomuser.me/api/portraits/men/75.jpg"));
+        allCoaches.add(new Coach("Mohammad Kaif", "Fielding", "150 mtrs", 150, 4.7, "https://randomuser.me/api/portraits/men/55.jpg"));
+        allCoaches.add(new Coach("Jasprit Bumrah", "Bowling", "300 mtrs", 300, 4.6, "https://randomuser.me/api/portraits/men/60.jpg"));
+        allCoaches.add(new Coach("Virat Kohli", "Batting", "1.2 km", 1200, 4.9, "https://randomuser.me/api/portraits/men/15.jpg"));
+        allCoaches.add(new Coach("Ravindra Jadeja", "Fielding", "2 km", 2000, 4.9, "https://randomuser.me/api/portraits/men/85.jpg"));
+    }
+
+    private static class Coach {
+        String name;
+        String specialty;
+        String distanceText;
+        int distanceInMeters;
+        double rating;
+        String avatarUrl;
+
+        public Coach(String name, String specialty, String distanceText, int distanceInMeters, double rating, String avatarUrl) {
+            this.name = name;
+            this.specialty = specialty;
+            this.distanceText = distanceText;
+            this.distanceInMeters = distanceInMeters;
+            this.rating = rating;
+            this.avatarUrl = avatarUrl;
+        }
     }
 }

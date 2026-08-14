@@ -435,8 +435,9 @@ public class PlayerHomePage extends Application {
                     borderPane.setCenter(new Player_Profile(borderPane));
                 }
                 case "Academy" -> {
-                    borderPane.setCenter(new Academy_Dashboard(borderPane));
-                }
+                        // Loads the Academy dashboard into the center
+                        borderPane.setCenter(new Academy_Dashboard().getView());
+                    }
                 case "Scorecard" -> {
                 // Loads your main Scorecard page into the center
                 borderPane.setCenter(new ScorecardPage().getView());
