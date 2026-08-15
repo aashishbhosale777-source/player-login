@@ -595,6 +595,39 @@ public class Group_Details extends VBox {
         return card;
     }
 
+    // --- UPGRADED COVER PHOTO BANNER ---
+    private StackPane buildGroupBanner() {
+        StackPane bannerCard = new StackPane();
+        bannerCard.setPrefHeight(160);
+        bannerCard.setMaxWidth(Double.MAX_VALUE);
+        bannerCard.setStyle("-fx-background-radius: 16 16 0 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
+
+        // 1. Background Image (using your stadium asset)
+        Region bgImage = new Region();
+        String imgPath = "file:src/main/resources/assests/images/stadium.jpg";
+        bgImage.setStyle("-fx-background-image: url('" + imgPath + "'); -fx-background-size: cover; -fx-background-position: center center; -fx-background-radius: 16 16 0 0;");
+
+        // 2. Dark Gradient Overlay for perfect text visibility
+        Region overlay = new Region();
+        overlay.setStyle("-fx-background-color: linear-gradient(to right, rgba(15,23,42,0.85), rgba(30,58,138,0.75)); -fx-background-radius: 16 16 0 0;");
+
+        // 3. Header Title Content
+        HBox content = new HBox(12);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(20));
+
+        Label iconLbl = new Label("🏏");
+        iconLbl.setStyle("-fx-font-size: 24px;");
+
+        Label titleLbl = new Label("Pune Cricket Club Official");
+        titleLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        content.getChildren().addAll(iconLbl, titleLbl);
+
+        bannerCard.getChildren().addAll(bgImage, overlay, content);
+        return bannerCard;
+    }
+
     private VBox buildChallengesList() {
         VBox container = new VBox(20);
         container.setPadding(new Insets(10, 0, 0, 0));
