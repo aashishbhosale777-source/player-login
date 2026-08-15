@@ -1,11 +1,14 @@
-package com.athlixcore.view.player;
-import com.athlixcore.view.player.Scorecard.ScorecardPage;
-import com.athlixcore.view.player.Tournament.Tournament_dashboard.TournamentPage; 
-// (or Tournament_Dashboard depending on your exact main page file name)
-import com.athlixcore.view.player.Academy.Academy_Dashboard;
 
+
+package com.athlixcore.view.player;
+
+import com.athlixcore.view.player.Scorecard.ScorecardPage;
+import com.athlixcore.view.player.Tournament.Tournament_dashboard.TournamentPage;
+import com.athlixcore.view.player.Training_Fitness.Traning_dashboard;
+import com.athlixcore.view.player.Academy.Academy_Dashboard;
 import com.athlixcore.view.player.Leaderboard.Leaderboard_Page;
 import com.athlixcore.view.player.community.Community_Dashboard;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.application.Application;
@@ -95,7 +98,6 @@ public class PlayerHomePage extends Application {
         profileButton.setOnMouseEntered(event -> profileButton.setStyle("-fx-background-color: #1d4ed8; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-size: 14px; -fx-padding: 10 14 10 14; -fx-font-weight: bold;"));
         profileButton.setOnMouseExited(event -> profileButton.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 20; -fx-font-size: 14px; -fx-padding: 10 14 10 14; -fx-font-weight: bold;"));
         
-        // --- WIRE TOP PROFILE BUTTON TO OPEN PLAYER PROFILE ---
         profileButton.setOnAction(event -> {
             borderPane.setCenter(new Player_Profile(borderPane));
         });
@@ -167,33 +169,20 @@ public class PlayerHomePage extends Application {
             if (selectedItem == null) return;
 
             switch (selectedItem) {
-                case "Community" -> {
-                    // Load the brand new Community Dashboard into the center
-                    borderPane.setCenter(new Community_Dashboard(borderPane));
+                case "Community" -> borderPane.setCenter(new Community_Dashboard(borderPane));
+                case "Profile" -> borderPane.setCenter(new Player_Profile(borderPane));
+                case "Academy" -> borderPane.setCenter(new Academy_Dashboard().getView());
+                case "Scorecard" -> borderPane.setCenter(new ScorecardPage().getView());
+                case "Tournament" -> borderPane.setCenter(new TournamentPage().getView()); 
+                case "Leaderboard" -> borderPane.setCenter(new Leaderboard_Page(borderPane));
+                
+                // >>> THIS IS THE FIX <<<
+                case "Traning / Fitness" -> {
+                    // This loads your highly attractive Training dashboard into the center!
+                    borderPane.setCenter(new Traning_dashboard().getView());
                 }
-                case "Profile" -> {
-                    // Load the Profile page into the center
-                    borderPane.setCenter(new Player_Profile(borderPane));
-                }
-                case "Academy" -> {
-                    // Loads the Academy dashboard into the center
-                    borderPane.setCenter(new Academy_Dashboard().getView());
-                }
-                case "Scorecard" -> {
-                    // Loads your main Scorecard page into the center
-                    borderPane.setCenter(new ScorecardPage().getView());
-                }
-                case "Tournament" -> {
-                    // Loads your main Tournament dashboard into the center
-                    borderPane.setCenter(new TournamentPage().getView()); 
-                }
-                case "Leaderboard" -> {
-                    // Loads your new Leaderboard page into the center
-                    borderPane.setCenter(new Leaderboard_Page(borderPane));
-                }
-                 
+
                 case "Dashboard" -> {
-                    // Default placeholder logic for Dashboard
                     VBox defaultBox = new VBox(20);
                     defaultBox.setPadding(new Insets(40));
                     defaultBox.setStyle("-fx-background-color: #fbf8f8;");
@@ -204,7 +193,6 @@ public class PlayerHomePage extends Application {
                     animateContent(contentTitle, contentText);
                 }
                 default -> {
-                    // Default placeholder logic for pages not built yet (Settings, etc)
                     VBox defaultBox = new VBox(20);
                     defaultBox.setPadding(new Insets(40));
                     defaultBox.setStyle("-fx-background-color: #fbf8f8;");
@@ -242,6 +230,3 @@ public class PlayerHomePage extends Application {
         fadeBody.play();
     }
 }
-
-
-
