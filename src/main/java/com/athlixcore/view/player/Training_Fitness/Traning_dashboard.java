@@ -1,1487 +1,3 @@
-
-
-// // // // // // package com.athlixcore.view.player.Training_Fitness;
-
-// // // // // // import javafx.animation.FadeTransition;
-// // // // // // import javafx.animation.ParallelTransition;
-// // // // // // import javafx.animation.ScaleTransition;
-// // // // // // import javafx.animation.TranslateTransition;
-// // // // // // import javafx.geometry.Insets;
-// // // // // // import javafx.geometry.Pos;
-// // // // // // import javafx.scene.Node;
-// // // // // // import javafx.scene.control.Button;
-// // // // // // import javafx.scene.control.Label;
-// // // // // // import javafx.scene.control.ScrollPane;
-// // // // // // import javafx.scene.control.TextField;
-// // // // // // import javafx.scene.image.Image;
-// // // // // // import javafx.scene.layout.*;
-// // // // // // import javafx.scene.paint.Color;
-// // // // // // import javafx.scene.shape.Circle;
-// // // // // // import javafx.scene.shape.Polygon;
-// // // // // // import javafx.scene.shape.Rectangle;
-// // // // // // import javafx.util.Duration;
-
-// // // // // // public class Traning_dashboard {
-
-// // // // // //     private BorderPane rootContainer;
-// // // // // //     private StackPane contentArea;
-// // // // // //     private Button trainingTabBtn;
-// // // // // //     private Button fitnessTabBtn;
-
-// // // // // //     public Node getView() {
-// // // // // //         if (rootContainer == null) {
-// // // // // //             rootContainer = new BorderPane();
-// // // // // //             rootContainer.setStyle("-fx-background-color: #f8fafc;");
-
-// // // // // //             // Create the fixed Top Bar (Search + Toggle + Profile)
-// // // // // //             Node topBar = buildTopBar();
-// // // // // //             rootContainer.setTop(topBar);
-
-// // // // // //             // Create the dynamic Content Area for switching between Training & Fitness
-// // // // // //             contentArea = new StackPane();
-// // // // // //             rootContainer.setCenter(contentArea);
-
-// // // // // //             // Load Training by default
-// // // // // //             loadTrainingView();
-// // // // // //         }
-// // // // // //         return rootContainer;
-// // // // // //     }
-
-// // // // // //     // --- ANIMATION HELPERS ---
-// // // // // //     private void animateNodeEntrance(Node node, int delayMillis) {
-// // // // // //         node.setOpacity(0);
-// // // // // //         node.setTranslateY(25);
-
-// // // // // //         FadeTransition ft = new FadeTransition(Duration.millis(600), node);
-// // // // // //         ft.setToValue(1.0);
-
-// // // // // //         TranslateTransition tt = new TranslateTransition(Duration.millis(600), node);
-// // // // // //         tt.setToY(0);
-
-// // // // // //         ParallelTransition pt = new ParallelTransition(ft, tt);
-// // // // // //         pt.setDelay(Duration.millis(delayMillis));
-// // // // // //         pt.play();
-// // // // // //     }
-
-// // // // // //     private void addHoverScale(Node node) {
-// // // // // //         ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
-// // // // // //         scaleIn.setToX(1.03); 
-// // // // // //         scaleIn.setToY(1.03);
-        
-// // // // // //         ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
-// // // // // //         scaleOut.setToX(1.0); 
-// // // // // //         scaleOut.setToY(1.0);
-
-// // // // // //         node.setOnMouseEntered(e -> scaleIn.playFromStart());
-// // // // // //         node.setOnMouseExited(e -> scaleOut.playFromStart());
-// // // // // //     }
-
-// // // // // //     // --- TOP BAR WITH TRAINING / FITNESS TOGGLE ---
-// // // // // //     private HBox buildTopBar() {
-// // // // // //         HBox topBar = new HBox(25);
-// // // // // //         topBar.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         topBar.setPadding(new Insets(20, 40, 10, 40));
-// // // // // //         topBar.setStyle("-fx-background-color: #f8fafc;");
-
-// // // // // //         // Search Bar
-// // // // // //         HBox searchBox = new HBox(10);
-// // // // // //         searchBox.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         searchBox.setStyle("-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 10 20; -fx-border-color: #e2e8f0; -fx-border-radius: 25;");
-        
-// // // // // //         Label searchIcon = new Label("🔍");
-// // // // // //         searchIcon.setStyle("-fx-text-fill: #94a3b8;");
-        
-// // // // // //         TextField searchField = new TextField();
-// // // // // //         searchField.setPromptText("Search training modules, coaches, or stats...");
-// // // // // //         searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-pref-width: 320px; -fx-prompt-text-fill: #94a3b8; -fx-font-size: 14px;");
-// // // // // //         searchBox.getChildren().addAll(searchIcon, searchField);
-
-// // // // // //         Region spacer = new Region();
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-
-// // // // // //         // --- NEW ATTRACTIVE TOGGLE BUTTONS (Matches Screenshot perfectly) ---
-// // // // // //         HBox toggleContainer = new HBox(0);
-// // // // // //         toggleContainer.setAlignment(Pos.CENTER);
-// // // // // //         toggleContainer.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 4;");
-
-// // // // // //         trainingTabBtn = new Button("Training");
-// // // // // //         fitnessTabBtn = new Button("Fitness");
-
-// // // // // //         styleToggleButton(trainingTabBtn, true);
-// // // // // //         styleToggleButton(fitnessTabBtn, false);
-
-// // // // // //         trainingTabBtn.setOnAction(e -> {
-// // // // // //             styleToggleButton(trainingTabBtn, true);
-// // // // // //             styleToggleButton(fitnessTabBtn, false);
-// // // // // //             loadTrainingView();
-// // // // // //         });
-
-// // // // // //         fitnessTabBtn.setOnAction(e -> {
-// // // // // //             styleToggleButton(fitnessTabBtn, true);
-// // // // // //             styleToggleButton(trainingTabBtn, false);
-// // // // // //             loadFitnessView();
-// // // // // //         });
-
-// // // // // //         toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
-
-// // // // // //         Circle avatar = new Circle(20);
-// // // // // //         try { 
-// // // // // //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); 
-// // // // // //         } catch (Exception e) { 
-// // // // // //             avatar.setFill(Color.GRAY); 
-// // // // // //         }
-// // // // // //         addHoverScale(avatar);
-
-// // // // // //         HBox rightControls = new HBox(18);
-// // // // // //         rightControls.setAlignment(Pos.CENTER);
-// // // // // //         rightControls.getChildren().addAll(toggleContainer);
-
-// // // // // //         topBar.getChildren().addAll( spacer,rightControls);
-// // // // // //         return topBar;
-// // // // // //     }
-
-// // // // // //     private void styleToggleButton(Button btn, boolean isActive) {
-// // // // // //         if (isActive) {
-// // // // // //             btn.setStyle("-fx-background-color: white; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
-// // // // // //         } else {
-// // // // // //             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-cursor: hand;");
-// // // // // //         }
-// // // // // //     }
-
-// // // // // //     // --- VIEW LOADERS ---
-// // // // // //     private void loadTrainingView() {
-// // // // // //         VBox layout = new VBox(25);
-// // // // // //         layout.setPadding(new Insets(20, 40, 40, 40));
-
-// // // // // //         Node heroBanner = buildHeroBanner();
-// // // // // //         Node statsRow = buildStatsRow();
-// // // // // //         Node splitArea = buildMainSplitArea();
-
-// // // // // //         layout.getChildren().addAll(heroBanner, statsRow, splitArea);
-
-// // // // // //         // Animate elements sequentially
-// // // // // //         animateNodeEntrance(heroBanner, 50);
-// // // // // //         animateNodeEntrance(statsRow, 150);
-// // // // // //         animateNodeEntrance(splitArea, 250);
-
-// // // // // //         ScrollPane scrollPane = new ScrollPane(layout);
-// // // // // //         scrollPane.setFitToWidth(true);
-// // // // // //         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
-// // // // // //         scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
-
-// // // // // //         contentArea.getChildren().setAll(scrollPane);
-// // // // // //     }
-
-// // // // // //     private void loadFitnessView() {
-// // // // // //         VBox layout = new VBox(20);
-// // // // // //         layout.setAlignment(Pos.CENTER);
-// // // // // //         layout.setPadding(new Insets(100, 40, 40, 40));
-
-// // // // // //         Label title = new Label("Fitness Dashboard");
-// // // // // //         title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-// // // // // //         Label subtitle = new Label("Your personalized fitness tracking and workout plans are coming soon.");
-// // // // // //         subtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b;");
-
-// // // // // //         layout.getChildren().addAll(title, subtitle);
-        
-// // // // // //         animateNodeEntrance(title, 50);
-// // // // // //         animateNodeEntrance(subtitle, 150);
-
-// // // // // //         contentArea.getChildren().setAll(layout);
-// // // // // //     }
-
-// // // // // //     // --- HERO BANNER ---
-// // // // // //     private StackPane buildHeroBanner() {
-// // // // // //         StackPane bannerPane = new StackPane();
-// // // // // //         bannerPane.setMinHeight(220);
-// // // // // //         bannerPane.setStyle("-fx-background-radius: 20; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 5);");
-
-// // // // // //         Region bg = new Region();
-// // // // // //         bg.setStyle("-fx-background-color: linear-gradient(to right, #1e293b, #0f172a); -fx-background-radius: 20;");
-        
-// // // // // //         HBox contentLayout = new HBox(30);
-// // // // // //         contentLayout.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         contentLayout.setPadding(new Insets(30, 40, 30, 40));
-
-// // // // // //         StackPane avatarRing = new StackPane();
-// // // // // //         Circle outerRing = new Circle(65, Color.TRANSPARENT);
-// // // // // //         outerRing.setStroke(Color.web("#10b981"));
-// // // // // //         outerRing.setStrokeWidth(3);
-// // // // // //         Circle innerAvatar = new Circle(55);
-// // // // // //         try { innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); } 
-// // // // // //         catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
-// // // // // //         avatarRing.getChildren().addAll(outerRing, innerAvatar);
-// // // // // //         addHoverScale(avatarRing);
-
-// // // // // //         VBox textLayout = new VBox(15);
-// // // // // //         textLayout.setAlignment(Pos.CENTER_LEFT);
-        
-// // // // // //         HBox nameRow = new HBox(15);
-// // // // // //         nameRow.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         Label nameLbl = new Label("Vikram Malhotra");
-// // // // // //         nameLbl.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;");
-// // // // // //         Label levelBadge = new Label("Pro Level 8");
-// // // // // //         levelBadge.setStyle("-fx-background-color: rgba(16,185,129,0.2); -fx-text-fill: #34d399; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 20; -fx-border-color: #10b981; -fx-border-radius: 20;");
-// // // // // //         nameRow.getChildren().addAll(nameLbl, levelBadge);
-
-// // // // // //         Label quoteLbl = new Label("\"The harder you work in the nets, the easier it is on the pitch.\"");
-// // // // // //         quoteLbl.setStyle("-fx-font-size: 14px; -fx-font-style: italic; -fx-text-fill: #94a3b8;");
-
-// // // // // //         HBox actionsRow = new HBox(15);
-// // // // // //         actionsRow.setAlignment(Pos.CENTER_LEFT);
-
-// // // // // //         VBox aiScoreBox = new VBox(2);
-// // // // // //         aiScoreBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 10 20; -fx-background-radius: 10;");
-// // // // // //         Label aiTitle = new Label("AI Improvement Score");
-// // // // // //         aiTitle.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
-// // // // // //         Label aiValue = new Label("+12.4%");
-// // // // // //         aiValue.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold; -fx-font-size: 16px;");
-// // // // // //         aiScoreBox.getChildren().addAll(aiTitle, aiValue);
-
-// // // // // //         Button startBtn = new Button("Start\nTraining");
-// // // // // //         startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
-// // // // // //         addHoverScale(startBtn);
-        
-// // // // // //         Button calBtn = new Button("Training\nCalendar");
-// // // // // //         calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
-// // // // // //         addHoverScale(calBtn);
-
-// // // // // //         Button bookBtn = new Button("Book\nCoach");
-// // // // // //         bookBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
-// // // // // //         addHoverScale(bookBtn);
-
-// // // // // //         actionsRow.getChildren().addAll(aiScoreBox, startBtn, calBtn, bookBtn);
-// // // // // //         textLayout.getChildren().addAll(nameRow, quoteLbl, actionsRow);
-        
-// // // // // //         contentLayout.getChildren().addAll(avatarRing, textLayout);
-// // // // // //         bannerPane.getChildren().addAll(bg, contentLayout);
-        
-// // // // // //         return bannerPane;
-// // // // // //     }
-
-// // // // // //     // --- STATS CARDS ---
-// // // // // //     private HBox buildStatsRow() {
-// // // // // //         HBox row = new HBox(20);
-// // // // // //         row.getChildren().addAll(
-// // // // // //             createCircularStatCard("Overall\nProgress", "82%", 0.82),
-// // // // // //             createIconStatCard("Sessions\nCompleted", "14", "📅"),
-// // // // // //             createIconStatCard("Practice Hours", "48h", "⏱"),
-// // // // // //             createIconStatCardWithGreen("AI Training\nScore", "94", "📊")
-// // // // // //         );
-// // // // // //         for (Node n : row.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
-// // // // // //         return row;
-// // // // // //     }
-
-// // // // // //     private HBox createCircularStatCard(String title, String value, double progress) {
-// // // // // //         HBox card = buildBaseCard();
-// // // // // //         VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
-        
-// // // // // //         StackPane circlePane = new StackPane();
-// // // // // //         Circle bgCircle = new Circle(22, Color.TRANSPARENT);
-// // // // // //         bgCircle.setStroke(Color.web("#f1f5f9"));
-// // // // // //         bgCircle.setStrokeWidth(4);
-        
-// // // // // //         Circle progCircle = new Circle(22, Color.TRANSPARENT);
-// // // // // //         progCircle.setStroke(Color.web("#10b981"));
-// // // // // //         progCircle.setStrokeWidth(4);
-// // // // // //         progCircle.getStrokeDashArray().addAll(progress * 138, 138.0);
-        
-// // // // // //         Label valLbl = new Label(value);
-// // // // // //         valLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;");
-// // // // // //         circlePane.getChildren().addAll(bgCircle, progCircle, valLbl);
-
-// // // // // //         Region spacer = new Region(); 
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // // //         card.getChildren().addAll(texts, spacer, circlePane);
-// // // // // //         return card;
-// // // // // //     }
-
-// // // // // //     private HBox createIconStatCard(String title, String value, String icon) {
-// // // // // //         HBox card = buildBaseCard();
-// // // // // //         VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
-// // // // // //         Region spacer = new Region(); 
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // // //         Label iconLbl = new Label(icon);
-// // // // // //         iconLbl.setStyle("-fx-font-size: 24px; -fx-text-fill: #94a3b8;");
-// // // // // //         card.getChildren().addAll(texts, spacer, iconLbl);
-// // // // // //         return card;
-// // // // // //     }
-
-// // // // // //     private HBox createIconStatCardWithGreen(String title, String value, String icon) {
-// // // // // //         HBox card = buildBaseCard();
-// // // // // //         VBox texts = new VBox(5, createStatTitle(title), createStatValue(value, "#10b981"));
-// // // // // //         Region spacer = new Region(); 
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-// // // // // //         StackPane iconPane = new StackPane();
-// // // // // //         iconPane.setStyle("-fx-background-color: #d1fae5; -fx-background-radius: 8; -fx-padding: 8;");
-// // // // // //         Label iconLbl = new Label(icon);
-// // // // // //         iconLbl.setStyle("-fx-font-size: 20px; -fx-text-fill: #10b981;");
-// // // // // //         iconPane.getChildren().add(iconLbl);
-        
-// // // // // //         card.getChildren().addAll(texts, spacer, iconPane);
-// // // // // //         return card;
-// // // // // //     }
-
-// // // // // //     private HBox buildBaseCard() {
-// // // // // //         HBox card = new HBox();
-// // // // // //         card.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         card.setPadding(new Insets(20));
-// // // // // //         card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);");
-// // // // // //         addHoverScale(card);
-// // // // // //         return card;
-// // // // // //     }
-    
-// // // // // //     private Label createStatTitle(String text) {
-// // // // // //         Label l = new Label(text);
-// // // // // //         l.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
-// // // // // //         return l;
-// // // // // //     }
-    
-// // // // // //     private Label createStatValue(String text) { return createStatValue(text, "#0f172a"); }
-// // // // // //     private Label createStatValue(String text, String color) {
-// // // // // //         Label l = new Label(text);
-// // // // // //         l.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
-// // // // // //         return l;
-// // // // // //     }
-
-// // // // // //     // --- MAIN SPLIT AREA ---
-// // // // // //     private HBox buildMainSplitArea() {
-// // // // // //         HBox splitLayout = new HBox(30);
-
-// // // // // //         VBox leftCol = new VBox(30);
-// // // // // //         HBox.setHgrow(leftCol, Priority.ALWAYS);
-// // // // // //         leftCol.getChildren().addAll(buildCategoriesSection(), buildAnalyticsSection());
-
-// // // // // //         VBox rightCol = new VBox(25);
-// // // // // //         rightCol.setPrefWidth(320);
-// // // // // //         rightCol.setMinWidth(320);
-// // // // // //         rightCol.getChildren().addAll(
-// // // // // //             buildScheduleSection(),
-// // // // // //             buildAIInsightsSection(),
-// // // // // //             buildWeatherEquipmentRow(),
-// // // // // //             buildMessagesSection()
-// // // // // //         );
-
-// // // // // //         splitLayout.getChildren().addAll(leftCol, rightCol);
-// // // // // //         return splitLayout;
-// // // // // //     }
-
-// // // // // //     // --- CATEGORIES GRID ---
-// // // // // //     private VBox buildCategoriesSection() {
-// // // // // //         VBox section = new VBox(15);
-// // // // // //         HBox header = new HBox();
-// // // // // //         Label title = new Label("Training Categories");
-// // // // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// // // // // //         Region spacer = new Region(); 
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // // //         Label viewAll = new Label("View All Drills");
-// // // // // //         viewAll.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-cursor: hand;");
-// // // // // //         header.getChildren().addAll(title, spacer, viewAll);
-
-// // // // // //         GridPane grid = new GridPane();
-// // // // // //         grid.setHgap(15); 
-// // // // // //         grid.setVgap(15);
-// // // // // //         ColumnConstraints cc = new ColumnConstraints(); 
-// // // // // //         cc.setPercentWidth(33.33);
-// // // // // //         grid.getColumnConstraints().addAll(cc, cc, cc);
-
-// // // // // //         grid.add(createImageCard("Batting Practice", "12 Drills Available", "#4f46e5"), 0, 0);
-// // // // // //         grid.add(createImageCard("Bowling Practice", "8 Drills Available", "#b45309"), 1, 0);
-// // // // // //         grid.add(createImageCard("Strength & Agility", "15 High-Intensity Plans", "#15803d"), 2, 0);
-// // // // // //         grid.add(createImageCard("Fielding Practice", "6 Expert Sessions", "#047857"), 0, 1);
-// // // // // //         grid.add(createImageCard("Video Analysis", "Scan & Compare", "#0f172a"), 1, 1);
-        
-// // // // // //         VBox customCard = new VBox(10);
-// // // // // //         customCard.setAlignment(Pos.CENTER);
-// // // // // //         customCard.setMinHeight(130);
-// // // // // //         customCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-style: dashed; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
-// // // // // //         Label plusIcon = new Label("⊕");
-// // // // // //         plusIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: #64748b;");
-// // // // // //         Label customTxt = new Label("Custom Drill");
-// // // // // //         customTxt.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
-// // // // // //         customCard.getChildren().addAll(plusIcon, customTxt);
-// // // // // //         addHoverScale(customCard);
-// // // // // //         grid.add(customCard, 2, 1);
-
-// // // // // //         section.getChildren().addAll(header, grid);
-// // // // // //         return section;
-// // // // // //     }
-
-// // // // // //     private StackPane createImageCard(String title, String subtitle, String fallbackColor) {
-// // // // // //         StackPane card = new StackPane();
-// // // // // //         card.setMinHeight(130);
-// // // // // //         card.setStyle("-fx-background-color: " + fallbackColor + "; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
-
-// // // // // //         Region overlay = new Region();
-// // // // // //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 12;");
-
-// // // // // //         VBox textData = new VBox(3);
-// // // // // //         textData.setAlignment(Pos.BOTTOM_LEFT);
-// // // // // //         textData.setPadding(new Insets(15));
-// // // // // //         Label tLbl = new Label(title);
-// // // // // //         tLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: white;");
-// // // // // //         Label sLbl = new Label(subtitle);
-// // // // // //         sLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #34d399;");
-// // // // // //         textData.getChildren().addAll(tLbl, sLbl);
-
-// // // // // //         card.getChildren().addAll(overlay, textData);
-// // // // // //         addHoverScale(card);
-// // // // // //         return card;
-// // // // // //     }
-
-// // // // // //     // --- ANALYTICS ---
-// // // // // //     private VBox buildAnalyticsSection() {
-// // // // // //         VBox box = new VBox(20);
-// // // // // //         box.setPadding(new Insets(25));
-// // // // // //         box.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);");
-// // // // // //         addHoverScale(box);
-
-// // // // // //         Label title = new Label("Skill Development Analytics");
-// // // // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-
-// // // // // //         HBox chartsRow = new HBox(30);
-// // // // // //         chartsRow.setAlignment(Pos.CENTER);
-
-// // // // // //         StackPane radarChart = buildRadarChartMock();
-        
-// // // // // //         VBox rightStats = new VBox(15);
-// // // // // //         rightStats.setAlignment(Pos.CENTER_LEFT);
-        
-// // // // // //         Label trendTitle = new Label("SKILL GROWTH TREND");
-// // // // // //         trendTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
-// // // // // //         Label trendVal = new Label("+18% this month");
-// // // // // //         trendVal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-// // // // // //         VBox trendBox = new VBox(2, trendTitle, trendVal);
-
-// // // // // //         HBox barChart = new HBox(8);
-// // // // // //         barChart.setAlignment(Pos.BOTTOM_CENTER);
-// // // // // //         barChart.setMinHeight(80);
-// // // // // //         double[] heights = {30, 45, 20, 60, 50, 70, 90};
-// // // // // //         for (int i = 0; i < heights.length; i++) {
-// // // // // //             Rectangle bar = new Rectangle(18, heights[i]);
-// // // // // //             bar.setArcWidth(4); 
-// // // // // //             bar.setArcHeight(4);
-// // // // // //             bar.setFill(i < 3 ? Color.web("#e2e8f0") : Color.web("#10b981"));
-// // // // // //             barChart.getChildren().add(bar);
-// // // // // //         }
-
-// // // // // //         HBox summaryRow = new HBox(10);
-// // // // // //         summaryRow.getChildren().addAll(
-// // // // // //             createGrowthBox("Top Gaining", "Bowling\nAccuracy", "#10b981"),
-// // // // // //             createGrowthBox("Needs Focus", "Power\nHitting", "#ef4444")
-// // // // // //         );
-
-// // // // // //         rightStats.getChildren().addAll(trendBox, barChart, summaryRow);
-// // // // // //         chartsRow.getChildren().addAll(radarChart, rightStats);
-// // // // // //         box.getChildren().addAll(title, chartsRow);
-// // // // // //         return box;
-// // // // // //     }
-
-// // // // // //     private StackPane buildRadarChartMock() {
-// // // // // //         StackPane pane = new StackPane();
-// // // // // //         pane.setPrefSize(200, 200);
-        
-// // // // // //         pane.getChildren().add(createPentagon(90, "#f8fafc", "#cbd5e1"));
-// // // // // //         pane.getChildren().add(createPentagon(60, "transparent", "#e2e8f0"));
-// // // // // //         pane.getChildren().add(createPentagon(30, "transparent", "#e2e8f0"));
-
-// // // // // //         Polygon dataPoly = new Polygon();
-// // // // // //         dataPoly.getPoints().addAll(
-// // // // // //             0.0, -70.0,   // Technique
-// // // // // //             60.0, -10.0,  // Power
-// // // // // //             40.0, 60.0,   // Reflex
-// // // // // //             -30.0, 50.0,  // Stamina
-// // // // // //             -80.0, -20.0  // Accuracy
-// // // // // //         );
-// // // // // //         dataPoly.setFill(Color.web("rgba(16, 185, 129, 0.4)"));
-// // // // // //         dataPoly.setStroke(Color.web("#10b981"));
-// // // // // //         dataPoly.setStrokeWidth(2);
-// // // // // //         pane.getChildren().add(dataPoly);
-
-// // // // // //         pane.getChildren().addAll(
-// // // // // //             positionLabel("TECHNIQUE", 0, -105),
-// // // // // //             positionLabel("POWER", 95, -20),
-// // // // // //             positionLabel("REFLEX", 65, 90),
-// // // // // //             positionLabel("STAMINA", -65, 90),
-// // // // // //             positionLabel("ACCURACY", -95, -20)
-// // // // // //         );
-
-// // // // // //         return pane;
-// // // // // //     }
-
-// // // // // //     private Polygon createPentagon(double radius, String fillHex, String strokeHex) {
-// // // // // //         Polygon p = new Polygon();
-// // // // // //         for (int i = 0; i < 5; i++) {
-// // // // // //             double angle = Math.toRadians(-90 + i * 72);
-// // // // // //             p.getPoints().addAll(radius * Math.cos(angle), radius * Math.sin(angle));
-// // // // // //         }
-// // // // // //         p.setFill(Color.web(fillHex));
-// // // // // //         p.setStroke(Color.web(strokeHex));
-// // // // // //         return p;
-// // // // // //     }
-
-// // // // // //     private Label positionLabel(String text, double tx, double ty) {
-// // // // // //         Label l = new Label(text);
-// // // // // //         l.setStyle("-fx-font-size: 10px; -fx-text-fill: #475569;");
-// // // // // //         l.setTranslateX(tx);
-// // // // // //         l.setTranslateY(ty);
-// // // // // //         return l;
-// // // // // //     }
-
-// // // // // //     private VBox createGrowthBox(String title, String val, String valColor) {
-// // // // // //         VBox box = new VBox(5);
-// // // // // //         box.setPadding(new Insets(10, 15, 10, 15));
-// // // // // //         box.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8;");
-// // // // // //         Label t = new Label(title);
-// // // // // //         t.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
-// // // // // //         Label v = new Label(val);
-// // // // // //         v.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + valColor + ";");
-// // // // // //         box.getChildren().addAll(t, v);
-// // // // // //         return box;
-// // // // // //     }
-
-// // // // // //     // --- SCHEDULE & AI SECTION ---
-// // // // // //     private VBox buildScheduleSection() {
-// // // // // //         VBox section = new VBox(15);
-// // // // // //         HBox header = new HBox();
-// // // // // //         Label title = new Label("Today's Schedule");
-// // // // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// // // // // //         Region spacer = new Region(); 
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // // //         Label calIcon = new Label("📅");
-// // // // // //         calIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 16px;");
-// // // // // //         header.getChildren().addAll(title, spacer, calIcon);
-
-// // // // // //         VBox list = new VBox(15);
-// // // // // //         list.getChildren().addAll(
-// // // // // //             createScheduleItem("16:00", "PM", "Fast Bowling Mastery", "Coach: Rahul Dravid • Lane 4", true),
-// // // // // //             createScheduleItem("18:30", "PM", "Recovery & Yoga", "Gym Zone B • Session 12", false)
-// // // // // //         );
-
-// // // // // //         section.getChildren().addAll(header, list);
-// // // // // //         return section;
-// // // // // //     }
-
-// // // // // //     private HBox createScheduleItem(String time, String ampm, String title, String subtitle, boolean isActive) {
-// // // // // //         HBox item = new HBox(15);
-// // // // // //         item.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         item.setPadding(new Insets(15));
-// // // // // //         item.setStyle("-fx-background-color: " + (isActive ? "#f0fdf4" : "white") + "; -fx-background-radius: 12; -fx-border-color: " + (isActive ? "transparent" : "#f1f5f9") + "; -fx-border-radius: 12;");
-// // // // // //         if (isActive) item.setStyle(item.getStyle() + "-fx-border-width: 0 0 0 4; -fx-border-color: #10b981;");
-// // // // // //         addHoverScale(item);
-
-// // // // // //         VBox timeBox = new VBox(0);
-// // // // // //         timeBox.setAlignment(Pos.CENTER);
-// // // // // //         Label t = new Label(time);
-// // // // // //         t.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #0f172a;");
-// // // // // //         Label ap = new Label(ampm);
-// // // // // //         ap.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + (isActive ? "#10b981" : "#94a3b8") + ";");
-// // // // // //         timeBox.getChildren().addAll(t, ap);
-
-// // // // // //         VBox dataBox = new VBox(3);
-// // // // // //         Label titleLbl = new Label(title);
-// // // // // //         titleLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
-// // // // // //         Label subLbl = new Label(subtitle);
-// // // // // //         subLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-// // // // // //         dataBox.getChildren().addAll(titleLbl, subLbl);
-
-// // // // // //         item.getChildren().addAll(timeBox, dataBox);
-// // // // // //         return item;
-// // // // // //     }
-
-// // // // // //     private VBox buildAIInsightsSection() {
-// // // // // //         VBox card = new VBox(20);
-// // // // // //         card.setPadding(new Insets(25));
-// // // // // //         card.setStyle("-fx-background-color: #0f172a; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 8);");
-// // // // // //         addHoverScale(card);
-
-// // // // // //         HBox header = new HBox(10);
-// // // // // //         header.setAlignment(Pos.CENTER_LEFT);
-// // // // // //         Label icon = new Label("🧠");
-// // // // // //         Label title = new Label("AI Training Insights");
-// // // // // //         title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;");
-// // // // // //         header.getChildren().addAll(icon, title);
-
-// // // // // //         Label quote = new Label("\"Aashish, your wrist position on the off-drive has shifted 3° inward. Today, focus on maintaining a high elbow finish to stabilize your shot direction.\"");
-// // // // // //         quote.setWrapText(true);
-// // // // // //         quote.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-style: italic; -fx-line-spacing: 5px;");
-
-// // // // // //         VBox plansBox = new VBox(10);
-// // // // // //         Label planTitle = new Label("ACTIVE PLANS");
-// // // // // //         planTitle.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
-// // // // // //         plansBox.getChildren().addAll(
-// // // // // //             planTitle,
-// // // // // //             createDarkPlanRow("Power Hitting Fundamentals", "75%", true),
-// // // // // //             createDarkPlanRow("Reverse Swing Mastery", "Coming Soon", false)
-// // // // // //         );
-
-// // // // // //         Button vrBtn = new Button("Launch VR Simulation");
-// // // // // //         vrBtn.setMaxWidth(Double.MAX_VALUE);
-// // // // // //         vrBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;");
-// // // // // //         addHoverScale(vrBtn);
-
-// // // // // //         card.getChildren().addAll(header, quote, plansBox, vrBtn);
-// // // // // //         return card;
-// // // // // //     }
-
-// // // // // //     private HBox createDarkPlanRow(String title, String val, boolean isGreenVal) {
-// // // // // //         HBox row = new HBox();
-// // // // // //         Label t = new Label(title);
-// // // // // //         t.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-// // // // // //         Region spacer = new Region(); 
-// // // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // // //         Label v = new Label(val);
-// // // // // //         v.setStyle("-fx-font-size: 12px; -fx-text-fill: " + (isGreenVal ? "#34d399" : "#64748b") + ";");
-// // // // // //         row.getChildren().addAll(t, spacer, v);
-// // // // // //         return row;
-// // // // // //     }
-
-// // // // // //     private HBox buildWeatherEquipmentRow() {
-// // // // // //         HBox row = new HBox(15);
-// // // // // //         VBox weather = new VBox(5);
-// // // // // //         weather.setAlignment(Pos.CENTER);
-// // // // // //         weather.setPadding(new Insets(15));
-// // // // // //         weather.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
-// // // // // //         Label wIcon = new Label("☀"); 
-// // // // // //         wIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
-// // // // // //         Label wTemp = new Label("28°C Clear"); 
-// // // // // //         wTemp.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
-// // // // // //         Label wSub = new Label("Perfect for Nets"); 
-// // // // // //         wSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
-// // // // // //         weather.getChildren().addAll(wIcon, wTemp, wSub);
-// // // // // //         HBox.setHgrow(weather, Priority.ALWAYS);
-// // // // // //         addHoverScale(weather);
-
-// // // // // //         VBox equip = new VBox(5);
-// // // // // //         equip.setAlignment(Pos.CENTER);
-// // // // // //         equip.setPadding(new Insets(15));
-// // // // // //         equip.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
-// // // // // //         Label eIcon = new Label("🏏"); 
-// // // // // //         eIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
-// // // // // //         Label eTitle = new Label("Equipment"); 
-// // // // // //         eTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
-// // // // // //         Label eSub = new Label("2 items needed"); 
-// // // // // //         eSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
-// // // // // //         equip.getChildren().addAll(eIcon, eTitle, eSub);
-// // // // // //         HBox.setHgrow(equip, Priority.ALWAYS);
-// // // // // //         addHoverScale(equip);
-
-// // // // // //         row.getChildren().addAll(weather, equip);
-// // // // // //         return row;
-// // // // // //     }
-
-// // // // // //     private VBox buildMessagesSection() {
-// // // // // //         VBox section = new VBox(15);
-// // // // // //         Label title = new Label("COACH MESSAGES");
-// // // // // //         title.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-letter-spacing: 1px;");
-
-// // // // // //         VBox list = new VBox(15);
-// // // // // //         list.getChildren().addAll(
-// // // // // //             createMessageItem("RD", "Rahul Dravid", "Check your backlift video from yesterday's session.", "#10b981"),
-// // // // // //             createMessageItem("SM", "S. Malinga", "Great yorker consistency. Let's try slow-balls next.", "#6366f1")
-// // // // // //         );
-
-// // // // // //         section.getChildren().addAll(title, list);
-// // // // // //         return section;
-// // // // // //     }
-
-// // // // // //     private HBox createMessageItem(String initials, String name, String msg, String color) {
-// // // // // //         HBox item = new HBox(15);
-// // // // // //         Label initLbl = new Label(initials);
-// // // // // //         initLbl.setAlignment(Pos.CENTER);
-// // // // // //         initLbl.setMinSize(36, 36);
-// // // // // //         initLbl.setStyle("-fx-background-color: " + color + "33; -fx-text-fill: " + color + "; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 18;");
-
-// // // // // //         VBox texts = new VBox(3);
-// // // // // //         Label nameLbl = new Label(name);
-// // // // // //         nameLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-// // // // // //         Label msgLbl = new Label(msg);
-// // // // // //         msgLbl.setWrapText(true);
-// // // // // //         msgLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-// // // // // //         texts.getChildren().addAll(nameLbl, msgLbl);
-
-// // // // // //         item.getChildren().addAll(initLbl, texts);
-// // // // // //         addHoverScale(item);
-// // // // // //         return item;
-// // // // // //     }
-// // // // // // }
-
-// // // // // package com.athlixcore.view.player.Training_Fitness;
-
-// // // // // import javafx.animation.FadeTransition;
-// // // // // import javafx.animation.ParallelTransition;
-// // // // // import javafx.animation.ScaleTransition;
-// // // // // import javafx.animation.TranslateTransition;
-// // // // // import javafx.geometry.Insets;
-// // // // // import javafx.geometry.Pos;
-// // // // // import javafx.scene.Node;
-// // // // // import javafx.scene.control.Button;
-// // // // // import javafx.scene.control.Label;
-// // // // // import javafx.scene.control.ScrollPane;
-// // // // // import javafx.scene.control.TextField;
-// // // // // import javafx.scene.image.Image;
-// // // // // import javafx.scene.layout.*;
-// // // // // import javafx.scene.paint.Color;
-// // // // // import javafx.scene.shape.Circle;
-// // // // // import javafx.scene.shape.Polygon;
-// // // // // import javafx.scene.shape.Rectangle;
-// // // // // import javafx.util.Duration;
-
-// // // // // public class Traning_dashboard {
-
-// // // // //     private BorderPane rootContainer;
-// // // // //     private StackPane contentArea;
-// // // // //     private Button trainingTabBtn;
-// // // // //     private Button fitnessTabBtn;
-
-// // // // //     public Node getView() {
-// // // // //         if (rootContainer == null) {
-// // // // //             rootContainer = new BorderPane();
-// // // // //             rootContainer.setStyle("-fx-background-color: #f8fafc;");
-
-// // // // //             // Create the fixed Top Bar (Search + Training/Fitness Toggle + Profile)
-// // // // //             Node topBar = buildTopBar();
-// // // // //             rootContainer.setTop(topBar);
-
-// // // // //             // Create the dynamic Content Area for switching between Training & Fitness
-// // // // //             contentArea = new StackPane();
-// // // // //             rootContainer.setCenter(contentArea);
-
-// // // // //             // Load Training by default
-// // // // //             loadTrainingView();
-// // // // //         }
-// // // // //         return rootContainer;
-// // // // //     }
-
-// // // // //     // --- ANIMATION HELPERS ---
-// // // // //     private void animateNodeEntrance(Node node, int delayMillis) {
-// // // // //         node.setOpacity(0);
-// // // // //         node.setTranslateY(25);
-
-// // // // //         FadeTransition ft = new FadeTransition(Duration.millis(600), node);
-// // // // //         ft.setToValue(1.0);
-
-// // // // //         TranslateTransition tt = new TranslateTransition(Duration.millis(600), node);
-// // // // //         tt.setToY(0);
-
-// // // // //         ParallelTransition pt = new ParallelTransition(ft, tt);
-// // // // //         pt.setDelay(Duration.millis(delayMillis));
-// // // // //         pt.play();
-// // // // //     }
-
-// // // // //     private void addHoverScale(Node node) {
-// // // // //         ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
-// // // // //         scaleIn.setToX(1.03); 
-// // // // //         scaleIn.setToY(1.03);
-        
-// // // // //         ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
-// // // // //         scaleOut.setToX(1.0); 
-// // // // //         scaleOut.setToY(1.0);
-
-// // // // //         node.setOnMouseEntered(e -> scaleIn.playFromStart());
-// // // // //         node.setOnMouseExited(e -> scaleOut.playFromStart());
-// // // // //     }
-
-// // // // //     // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
-// // // // //     private HBox buildTopBar() {
-// // // // //         HBox topBar = new HBox(25);
-// // // // //         topBar.setAlignment(Pos.CENTER_LEFT);
-// // // // //         topBar.setPadding(new Insets(20, 40, 10, 40));
-// // // // //         topBar.setStyle("-fx-background-color: #f8fafc;");
-
-// // // // //         // Search Bar
-// // // // //         HBox searchBox = new HBox(10);
-// // // // //         searchBox.setAlignment(Pos.CENTER_LEFT);
-// // // // //         searchBox.setStyle("-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 10 20; -fx-border-color: #e2e8f0; -fx-border-radius: 25;");
-        
-// // // // //         Label searchIcon = new Label("🔍");
-// // // // //         searchIcon.setStyle("-fx-text-fill: #94a3b8;");
-        
-// // // // //         TextField searchField = new TextField();
-// // // // //         searchField.setPromptText("Search training modules, coaches, or stats...");
-// // // // //         searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-pref-width: 320px; -fx-prompt-text-fill: #94a3b8; -fx-font-size: 14px;");
-// // // // //         searchBox.getChildren().addAll(searchIcon, searchField);
-
-// // // // //         Region spacer = new Region();
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-
-// // // // //         // --- TRAINING & FITNESS TOGGLE BUTTONS ---
-// // // // //         HBox toggleContainer = new HBox(5);
-// // // // //         toggleContainer.setAlignment(Pos.CENTER);
-// // // // //         toggleContainer.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 4;");
-
-// // // // //         trainingTabBtn = new Button("Training");
-// // // // //         fitnessTabBtn = new Button("Fitness");
-
-// // // // //         styleMainToggleButton(trainingTabBtn, true);
-// // // // //         styleMainToggleButton(fitnessTabBtn, false);
-
-// // // // //         trainingTabBtn.setOnAction(e -> {
-// // // // //             styleMainToggleButton(trainingTabBtn, true);
-// // // // //             styleMainToggleButton(fitnessTabBtn, false);
-// // // // //             loadTrainingView();
-// // // // //         });
-
-// // // // //         fitnessTabBtn.setOnAction(e -> {
-// // // // //             styleMainToggleButton(fitnessTabBtn, true);
-// // // // //             styleMainToggleButton(trainingTabBtn, false);
-// // // // //             loadFitnessView();
-// // // // //         });
-
-// // // // //         toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
-
-      
-// // // // //         Circle avatar = new Circle(20);
-// // // // //         try { 
-// // // // //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); 
-// // // // //         } catch (Exception e) { 
-// // // // //             avatar.setFill(Color.GRAY); 
-// // // // //         }
-// // // // //         addHoverScale(avatar);
-
-// // // // //         HBox rightControls = new HBox(18);
-// // // // //         rightControls.setAlignment(Pos.CENTER);
-// // // // //         rightControls.getChildren().addAll(toggleContainer);
-
-// // // // //         topBar.getChildren().addAll( spacer, rightControls);
-// // // // //         return topBar;
-// // // // //     }
-
-// // // // //     private void styleMainToggleButton(Button btn, boolean isActive) {
-// // // // //         if (isActive) {
-// // // // //             btn.setStyle("-fx-background-color: white; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
-// // // // //         } else {
-// // // // //             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-cursor: hand;");
-// // // // //         }
-// // // // //     }
-
-// // // // //     // --- VIEW LOADERS ---
-// // // // //     private void loadTrainingView() {
-// // // // //         VBox layout = new VBox(20);
-// // // // //         layout.setPadding(new Insets(10, 40, 40, 40));
-
-// // // // //         // --- NEW TEAM & PERFORMANCE SUB-NAVIGATION ---
-// // // // //         HBox subNav = new HBox(25);
-// // // // //         subNav.setAlignment(Pos.CENTER_LEFT);
-
-// // // // //         Button teamBtn = new Button("Team");
-// // // // //         Button performanceBtn = new Button("Performance");
-
-// // // // //         StackPane innerContentArea = new StackPane();
-
-// // // // //         teamBtn.setOnAction(e -> {
-// // // // //             styleSubNavTab(teamBtn, true);
-// // // // //             styleSubNavTab(performanceBtn, false);
-// // // // //             loadTeamContent(innerContentArea);
-// // // // //         });
-
-// // // // //         performanceBtn.setOnAction(e -> {
-// // // // //             styleSubNavTab(performanceBtn, true);
-// // // // //             styleSubNavTab(teamBtn, false);
-// // // // //             loadPerformanceContent(innerContentArea);
-// // // // //         });
-
-// // // // //         // Initialize default view to Team
-// // // // //         styleSubNavTab(teamBtn, true);
-// // // // //         styleSubNavTab(performanceBtn, false);
-// // // // //         loadTeamContent(innerContentArea);
-
-// // // // //         subNav.getChildren().addAll(teamBtn, performanceBtn);
-
-// // // // //         layout.getChildren().addAll(subNav, innerContentArea);
-
-// // // // //         ScrollPane scrollPane = new ScrollPane(layout);
-// // // // //         scrollPane.setFitToWidth(true);
-// // // // //         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
-// // // // //         scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
-
-// // // // //         contentArea.getChildren().setAll(scrollPane);
-// // // // //     }
-
-// // // // //     private void styleSubNavTab(Button btn, boolean isActive) {
-// // // // //         if (isActive) {
-// // // // //             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 16px; -fx-border-color: #10b981; -fx-border-width: 0 0 3 0; -fx-padding: 5 10 5 10; -fx-cursor: hand;");
-// // // // //         } else {
-// // // // //             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 16px; -fx-border-width: 0; -fx-padding: 5 10 5 10; -fx-cursor: hand;");
-// // // // //         }
-// // // // //     }
-
-// // // // //     // --- INNER CONTENT LOADERS FOR TEAM vs PERFORMANCE ---
-// // // // //     private void loadTeamContent(StackPane container) {
-// // // // //         VBox layout = new VBox(25);
-// // // // //         layout.setPadding(new Insets(10, 0, 0, 0));
-
-// // // // //         Node heroBanner = buildHeroBanner();
-// // // // //         Node statsRow = buildStatsRow();
-// // // // //         Node splitArea = buildMainSplitArea();
-
-// // // // //         layout.getChildren().addAll(heroBanner, statsRow, splitArea);
-
-// // // // //         // Animate elements sequentially
-// // // // //         animateNodeEntrance(heroBanner, 50);
-// // // // //         animateNodeEntrance(statsRow, 150);
-// // // // //         animateNodeEntrance(splitArea, 250);
-
-// // // // //         container.getChildren().setAll(layout);
-// // // // //     }
-
-// // // // //     private void loadPerformanceContent(StackPane container) {
-// // // // //         VBox layout = new VBox(20);
-// // // // //         layout.setAlignment(Pos.CENTER);
-// // // // //         layout.setPadding(new Insets(100, 0, 0, 0));
-
-// // // // //         Label title = new Label("Performance Analytics Dashboard");
-// // // // //         title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-// // // // //         Label subtitle = new Label("Your detailed performance metrics, heatmaps, and charts will appear here soon.");
-// // // // //         subtitle.setStyle("-fx-font-size: 15px; -fx-text-fill: #64748b;");
-
-// // // // //         layout.getChildren().addAll(title, subtitle);
-        
-// // // // //         animateNodeEntrance(title, 50);
-// // // // //         animateNodeEntrance(subtitle, 150);
-
-// // // // //         container.getChildren().setAll(layout);
-// // // // //     }
-
-// // // // //     private void loadFitnessView() {
-// // // // //         VBox layout = new VBox(20);
-// // // // //         layout.setAlignment(Pos.CENTER);
-// // // // //         layout.setPadding(new Insets(100, 40, 40, 40));
-
-// // // // //         Label title = new Label("Fitness Dashboard");
-// // // // //         title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-// // // // //         Label subtitle = new Label("Your personalized fitness tracking and workout plans are coming soon.");
-// // // // //         subtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b;");
-
-// // // // //         layout.getChildren().addAll(title, subtitle);
-        
-// // // // //         animateNodeEntrance(title, 50);
-// // // // //         animateNodeEntrance(subtitle, 150);
-
-// // // // //         contentArea.getChildren().setAll(layout);
-// // // // //     }
-
-// // // // //     // --- HERO BANNER ---
-// // // // //     private StackPane buildHeroBanner() {
-// // // // //         StackPane bannerPane = new StackPane();
-// // // // //         bannerPane.setMinHeight(220);
-// // // // //         bannerPane.setStyle("-fx-background-radius: 20; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 5);");
-
-// // // // //         Region bg = new Region();
-// // // // //         bg.setStyle("-fx-background-color: linear-gradient(to right, #1e293b, #0f172a); -fx-background-radius: 20;");
-        
-// // // // //         HBox contentLayout = new HBox(30);
-// // // // //         contentLayout.setAlignment(Pos.CENTER_LEFT);
-// // // // //         contentLayout.setPadding(new Insets(30, 40, 30, 40));
-
-// // // // //         StackPane avatarRing = new StackPane();
-// // // // //         Circle outerRing = new Circle(65, Color.TRANSPARENT);
-// // // // //         outerRing.setStroke(Color.web("#10b981"));
-// // // // //         outerRing.setStrokeWidth(3);
-// // // // //         Circle innerAvatar = new Circle(55);
-// // // // //         try { innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); } 
-// // // // //         catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
-// // // // //         avatarRing.getChildren().addAll(outerRing, innerAvatar);
-// // // // //         addHoverScale(avatarRing);
-
-// // // // //         VBox textLayout = new VBox(15);
-// // // // //         textLayout.setAlignment(Pos.CENTER_LEFT);
-        
-// // // // //         HBox nameRow = new HBox(15);
-// // // // //         nameRow.setAlignment(Pos.CENTER_LEFT);
-// // // // //         Label nameLbl = new Label("Vikram Malhotra");
-// // // // //         nameLbl.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;");
-// // // // //         Label levelBadge = new Label("Pro Level 8");
-// // // // //         levelBadge.setStyle("-fx-background-color: rgba(16,185,129,0.2); -fx-text-fill: #34d399; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 20; -fx-border-color: #10b981; -fx-border-radius: 20;");
-// // // // //         nameRow.getChildren().addAll(nameLbl, levelBadge);
-
-// // // // //         Label quoteLbl = new Label("\"The harder you work in the nets, the easier it is on the pitch.\"");
-// // // // //         quoteLbl.setStyle("-fx-font-size: 14px; -fx-font-style: italic; -fx-text-fill: #94a3b8;");
-
-// // // // //         HBox actionsRow = new HBox(15);
-// // // // //         actionsRow.setAlignment(Pos.CENTER_LEFT);
-
-// // // // //         VBox aiScoreBox = new VBox(2);
-// // // // //         aiScoreBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 10 20; -fx-background-radius: 10;");
-// // // // //         Label aiTitle = new Label("AI Improvement Score");
-// // // // //         aiTitle.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
-// // // // //         Label aiValue = new Label("+12.4%");
-// // // // //         aiValue.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold; -fx-font-size: 16px;");
-// // // // //         aiScoreBox.getChildren().addAll(aiTitle, aiValue);
-
-// // // // //         Button startBtn = new Button("Start\nTraining");
-// // // // //         startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
-// // // // //         addHoverScale(startBtn);
-        
-// // // // //         Button calBtn = new Button("Training\nCalendar");
-// // // // //         calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
-// // // // //         addHoverScale(calBtn);
-
-// // // // //         Button bookBtn = new Button("Book\nCoach");
-// // // // //         bookBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
-// // // // //         addHoverScale(bookBtn);
-
-// // // // //         actionsRow.getChildren().addAll(aiScoreBox, startBtn, calBtn, bookBtn);
-// // // // //         textLayout.getChildren().addAll(nameRow, quoteLbl, actionsRow);
-        
-// // // // //         contentLayout.getChildren().addAll(avatarRing, textLayout);
-// // // // //         bannerPane.getChildren().addAll(bg, contentLayout);
-        
-// // // // //         return bannerPane;
-// // // // //     }
-
-// // // // //     // --- STATS CARDS ---
-// // // // //     private HBox buildStatsRow() {
-// // // // //         HBox row = new HBox(20);
-// // // // //         row.getChildren().addAll(
-// // // // //             createCircularStatCard("Overall\nProgress", "82%", 0.82),
-// // // // //             createIconStatCard("Sessions\nCompleted", "14", "📅"),
-// // // // //             createIconStatCard("Practice Hours", "48h", "⏱"),
-// // // // //             createIconStatCardWithGreen("AI Training\nScore", "94", "📊")
-// // // // //         );
-// // // // //         for (Node n : row.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
-// // // // //         return row;
-// // // // //     }
-
-// // // // //     private HBox createCircularStatCard(String title, String value, double progress) {
-// // // // //         HBox card = buildBaseCard();
-// // // // //         VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
-        
-// // // // //         StackPane circlePane = new StackPane();
-// // // // //         Circle bgCircle = new Circle(22, Color.TRANSPARENT);
-// // // // //         bgCircle.setStroke(Color.web("#f1f5f9"));
-// // // // //         bgCircle.setStrokeWidth(4);
-        
-// // // // //         Circle progCircle = new Circle(22, Color.TRANSPARENT);
-// // // // //         progCircle.setStroke(Color.web("#10b981"));
-// // // // //         progCircle.setStrokeWidth(4);
-// // // // //         progCircle.getStrokeDashArray().addAll(progress * 138, 138.0);
-        
-// // // // //         Label valLbl = new Label(value);
-// // // // //         valLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;");
-// // // // //         circlePane.getChildren().addAll(bgCircle, progCircle, valLbl);
-
-// // // // //         Region spacer = new Region(); 
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // //         card.getChildren().addAll(texts, spacer, circlePane);
-// // // // //         return card;
-// // // // //     }
-
-// // // // //     private HBox createIconStatCard(String title, String value, String icon) {
-// // // // //         HBox card = buildBaseCard();
-// // // // //         VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
-// // // // //         Region spacer = new Region(); 
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // //         Label iconLbl = new Label(icon);
-// // // // //         iconLbl.setStyle("-fx-font-size: 24px; -fx-text-fill: #94a3b8;");
-// // // // //         card.getChildren().addAll(texts, spacer, iconLbl);
-// // // // //         return card;
-// // // // //     }
-
-// // // // //     private HBox createIconStatCardWithGreen(String title, String value, String icon) {
-// // // // //         HBox card = buildBaseCard();
-// // // // //         VBox texts = new VBox(5, createStatTitle(title), createStatValue(value, "#10b981"));
-// // // // //         Region spacer = new Region(); 
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-// // // // //         StackPane iconPane = new StackPane();
-// // // // //         iconPane.setStyle("-fx-background-color: #d1fae5; -fx-background-radius: 8; -fx-padding: 8;");
-// // // // //         Label iconLbl = new Label(icon);
-// // // // //         iconLbl.setStyle("-fx-font-size: 20px; -fx-text-fill: #10b981;");
-// // // // //         iconPane.getChildren().add(iconLbl);
-        
-// // // // //         card.getChildren().addAll(texts, spacer, iconPane);
-// // // // //         return card;
-// // // // //     }
-
-// // // // //     private HBox buildBaseCard() {
-// // // // //         HBox card = new HBox();
-// // // // //         card.setAlignment(Pos.CENTER_LEFT);
-// // // // //         card.setPadding(new Insets(20));
-// // // // //         card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);");
-// // // // //         addHoverScale(card);
-// // // // //         return card;
-// // // // //     }
-    
-// // // // //     private Label createStatTitle(String text) {
-// // // // //         Label l = new Label(text);
-// // // // //         l.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
-// // // // //         return l;
-// // // // //     }
-    
-// // // // //     private Label createStatValue(String text) { return createStatValue(text, "#0f172a"); }
-// // // // //     private Label createStatValue(String text, String color) {
-// // // // //         Label l = new Label(text);
-// // // // //         l.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
-// // // // //         return l;
-// // // // //     }
-
-// // // // //     // --- MAIN SPLIT AREA ---
-// // // // //     private HBox buildMainSplitArea() {
-// // // // //         HBox splitLayout = new HBox(30);
-
-// // // // //         VBox leftCol = new VBox(30);
-// // // // //         HBox.setHgrow(leftCol, Priority.ALWAYS);
-// // // // //         leftCol.getChildren().addAll(buildCategoriesSection(), buildAnalyticsSection());
-
-// // // // //         VBox rightCol = new VBox(25);
-// // // // //         rightCol.setPrefWidth(320);
-// // // // //         rightCol.setMinWidth(320);
-// // // // //         rightCol.getChildren().addAll(
-// // // // //             buildScheduleSection(),
-// // // // //             buildAIInsightsSection(),
-// // // // //             buildWeatherEquipmentRow(),
-// // // // //             buildMessagesSection()
-// // // // //         );
-
-// // // // //         splitLayout.getChildren().addAll(leftCol, rightCol);
-// // // // //         return splitLayout;
-// // // // //     }
-
-// // // // //     // --- CATEGORIES GRID ---
-// // // // //     private VBox buildCategoriesSection() {
-// // // // //         VBox section = new VBox(15);
-// // // // //         HBox header = new HBox();
-// // // // //         Label title = new Label("Training Categories");
-// // // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// // // // //         Region spacer = new Region(); 
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // //         Label viewAll = new Label("View All Drills");
-// // // // //         viewAll.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-cursor: hand;");
-// // // // //         header.getChildren().addAll(title, spacer, viewAll);
-
-// // // // //         GridPane grid = new GridPane();
-// // // // //         grid.setHgap(15); 
-// // // // //         grid.setVgap(15);
-// // // // //         ColumnConstraints cc = new ColumnConstraints(); 
-// // // // //         cc.setPercentWidth(33.33);
-// // // // //         grid.getColumnConstraints().addAll(cc, cc, cc);
-
-// // // // //         grid.add(createImageCard("Batting Practice", "12 Drills Available", "#4f46e5"), 0, 0);
-// // // // //         grid.add(createImageCard("Bowling Practice", "8 Drills Available", "#b45309"), 1, 0);
-// // // // //         grid.add(createImageCard("Strength & Agility", "15 High-Intensity Plans", "#15803d"), 2, 0);
-// // // // //         grid.add(createImageCard("Fielding Practice", "6 Expert Sessions", "#047857"), 0, 1);
-// // // // //         grid.add(createImageCard("Video Analysis", "Scan & Compare", "#0f172a"), 1, 1);
-        
-// // // // //         VBox customCard = new VBox(10);
-// // // // //         customCard.setAlignment(Pos.CENTER);
-// // // // //         customCard.setMinHeight(130);
-// // // // //         customCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-style: dashed; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
-// // // // //         Label plusIcon = new Label("⊕");
-// // // // //         plusIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: #64748b;");
-// // // // //         Label customTxt = new Label("Custom Drill");
-// // // // //         customTxt.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
-// // // // //         customCard.getChildren().addAll(plusIcon, customTxt);
-// // // // //         addHoverScale(customCard);
-// // // // //         grid.add(customCard, 2, 1);
-
-// // // // //         section.getChildren().addAll(header, grid);
-// // // // //         return section;
-// // // // //     }
-
-// // // // //     private StackPane createImageCard(String title, String subtitle, String fallbackColor) {
-// // // // //         StackPane card = new StackPane();
-// // // // //         card.setMinHeight(130);
-// // // // //         card.setStyle("-fx-background-color: " + fallbackColor + "; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
-
-// // // // //         Region overlay = new Region();
-// // // // //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 12;");
-
-// // // // //         VBox textData = new VBox(3);
-// // // // //         textData.setAlignment(Pos.BOTTOM_LEFT);
-// // // // //         textData.setPadding(new Insets(15));
-// // // // //         Label tLbl = new Label(title);
-// // // // //         tLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: white;");
-// // // // //         Label sLbl = new Label(subtitle);
-// // // // //         sLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #34d399;");
-// // // // //         textData.getChildren().addAll(tLbl, sLbl);
-
-// // // // //         card.getChildren().addAll(overlay, textData);
-// // // // //         addHoverScale(card);
-// // // // //         return card;
-// // // // //     }
-
-// // // // //     // --- ANALYTICS ---
-// // // // //     private VBox buildAnalyticsSection() {
-// // // // //         VBox box = new VBox(20);
-// // // // //         box.setPadding(new Insets(25));
-// // // // //         box.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);");
-// // // // //         addHoverScale(box);
-
-// // // // //         Label title = new Label("Skill Development Analytics");
-// // // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-
-// // // // //         HBox chartsRow = new HBox(30);
-// // // // //         chartsRow.setAlignment(Pos.CENTER);
-
-// // // // //         StackPane radarChart = buildRadarChartMock();
-        
-// // // // //         VBox rightStats = new VBox(15);
-// // // // //         rightStats.setAlignment(Pos.CENTER_LEFT);
-        
-// // // // //         Label trendTitle = new Label("SKILL GROWTH TREND");
-// // // // //         trendTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
-// // // // //         Label trendVal = new Label("+18% this month");
-// // // // //         trendVal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-// // // // //         VBox trendBox = new VBox(2, trendTitle, trendVal);
-
-// // // // //         HBox barChart = new HBox(8);
-// // // // //         barChart.setAlignment(Pos.BOTTOM_CENTER);
-// // // // //         barChart.setMinHeight(80);
-// // // // //         double[] heights = {30, 45, 20, 60, 50, 70, 90};
-// // // // //         for (int i = 0; i < heights.length; i++) {
-// // // // //             Rectangle bar = new Rectangle(18, heights[i]);
-// // // // //             bar.setArcWidth(4); 
-// // // // //             bar.setArcHeight(4);
-// // // // //             bar.setFill(i < 3 ? Color.web("#e2e8f0") : Color.web("#10b981"));
-// // // // //             barChart.getChildren().add(bar);
-// // // // //         }
-
-// // // // //         HBox summaryRow = new HBox(10);
-// // // // //         summaryRow.getChildren().addAll(
-// // // // //             createGrowthBox("Top Gaining", "Bowling\nAccuracy", "#10b981"),
-// // // // //             createGrowthBox("Needs Focus", "Power\nHitting", "#ef4444")
-// // // // //         );
-
-// // // // //         rightStats.getChildren().addAll(trendBox, barChart, summaryRow);
-// // // // //         chartsRow.getChildren().addAll(radarChart, rightStats);
-// // // // //         box.getChildren().addAll(title, chartsRow);
-// // // // //         return box;
-// // // // //     }
-
-// // // // //     private StackPane buildRadarChartMock() {
-// // // // //         StackPane pane = new StackPane();
-// // // // //         pane.setPrefSize(200, 200);
-        
-// // // // //         pane.getChildren().add(createPentagon(90, "#f8fafc", "#cbd5e1"));
-// // // // //         pane.getChildren().add(createPentagon(60, "transparent", "#e2e8f0"));
-// // // // //         pane.getChildren().add(createPentagon(30, "transparent", "#e2e8f0"));
-
-// // // // //         Polygon dataPoly = new Polygon();
-// // // // //         dataPoly.getPoints().addAll(
-// // // // //             0.0, -70.0,   // Technique
-// // // // //             60.0, -10.0,  // Power
-// // // // //             40.0, 60.0,   // Reflex
-// // // // //             -30.0, 50.0,  // Stamina
-// // // // //             -80.0, -20.0  // Accuracy
-// // // // //         );
-// // // // //         dataPoly.setFill(Color.web("rgba(16, 185, 129, 0.4)"));
-// // // // //         dataPoly.setStroke(Color.web("#10b981"));
-// // // // //         dataPoly.setStrokeWidth(2);
-// // // // //         pane.getChildren().add(dataPoly);
-
-// // // // //         pane.getChildren().addAll(
-// // // // //             positionLabel("TECHNIQUE", 0, -105),
-// // // // //             positionLabel("POWER", 95, -20),
-// // // // //             positionLabel("REFLEX", 65, 90),
-// // // // //             positionLabel("STAMINA", -65, 90),
-// // // // //             positionLabel("ACCURACY", -95, -20)
-// // // // //         );
-
-// // // // //         return pane;
-// // // // //     }
-
-// // // // //     private Polygon createPentagon(double radius, String fillHex, String strokeHex) {
-// // // // //         Polygon p = new Polygon();
-// // // // //         for (int i = 0; i < 5; i++) {
-// // // // //             double angle = Math.toRadians(-90 + i * 72);
-// // // // //             p.getPoints().addAll(radius * Math.cos(angle), radius * Math.sin(angle));
-// // // // //         }
-// // // // //         p.setFill(Color.web(fillHex));
-// // // // //         p.setStroke(Color.web(strokeHex));
-// // // // //         return p;
-// // // // //     }
-
-// // // // //     private Label positionLabel(String text, double tx, double ty) {
-// // // // //         Label l = new Label(text);
-// // // // //         l.setStyle("-fx-font-size: 10px; -fx-text-fill: #475569;");
-// // // // //         l.setTranslateX(tx);
-// // // // //         l.setTranslateY(ty);
-// // // // //         return l;
-// // // // //     }
-
-// // // // //     private VBox createGrowthBox(String title, String val, String valColor) {
-// // // // //         VBox box = new VBox(5);
-// // // // //         box.setPadding(new Insets(10, 15, 10, 15));
-// // // // //         box.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8;");
-// // // // //         Label t = new Label(title);
-// // // // //         t.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
-// // // // //         Label v = new Label(val);
-// // // // //         v.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + valColor + ";");
-// // // // //         box.getChildren().addAll(t, v);
-// // // // //         return box;
-// // // // //     }
-
-// // // // //     // --- SCHEDULE & AI SECTION ---
-// // // // //     private VBox buildScheduleSection() {
-// // // // //         VBox section = new VBox(15);
-// // // // //         HBox header = new HBox();
-// // // // //         Label title = new Label("Today's Schedule");
-// // // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// // // // //         Region spacer = new Region(); 
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // //         Label calIcon = new Label("📅");
-// // // // //         calIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 16px;");
-// // // // //         header.getChildren().addAll(title, spacer, calIcon);
-
-// // // // //         VBox list = new VBox(15);
-// // // // //         list.getChildren().addAll(
-// // // // //             createScheduleItem("16:00", "PM", "Fast Bowling Mastery", "Coach: Rahul Dravid • Lane 4", true),
-// // // // //             createScheduleItem("18:30", "PM", "Recovery & Yoga", "Gym Zone B • Session 12", false)
-// // // // //         );
-
-// // // // //         section.getChildren().addAll(header, list);
-// // // // //         return section;
-// // // // //     }
-
-// // // // //     private HBox createScheduleItem(String time, String ampm, String title, String subtitle, boolean isActive) {
-// // // // //         HBox item = new HBox(15);
-// // // // //         item.setAlignment(Pos.CENTER_LEFT);
-// // // // //         item.setPadding(new Insets(15));
-// // // // //         item.setStyle("-fx-background-color: " + (isActive ? "#f0fdf4" : "white") + "; -fx-background-radius: 12; -fx-border-color: " + (isActive ? "transparent" : "#f1f5f9") + "; -fx-border-radius: 12;");
-// // // // //         if (isActive) item.setStyle(item.getStyle() + "-fx-border-width: 0 0 0 4; -fx-border-color: #10b981;");
-// // // // //         addHoverScale(item);
-
-// // // // //         VBox timeBox = new VBox(0);
-// // // // //         timeBox.setAlignment(Pos.CENTER);
-// // // // //         Label t = new Label(time);
-// // // // //         t.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #0f172a;");
-// // // // //         Label ap = new Label(ampm);
-// // // // //         ap.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + (isActive ? "#10b981" : "#94a3b8") + ";");
-// // // // //         timeBox.getChildren().addAll(t, ap);
-
-// // // // //         VBox dataBox = new VBox(3);
-// // // // //         Label titleLbl = new Label(title);
-// // // // //         titleLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
-// // // // //         Label subLbl = new Label(subtitle);
-// // // // //         subLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-// // // // //         dataBox.getChildren().addAll(titleLbl, subLbl);
-
-// // // // //         item.getChildren().addAll(timeBox, dataBox);
-// // // // //         return item;
-// // // // //     }
-
-// // // // //     private VBox buildAIInsightsSection() {
-// // // // //         VBox card = new VBox(20);
-// // // // //         card.setPadding(new Insets(25));
-// // // // //         card.setStyle("-fx-background-color: #0f172a; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 8);");
-// // // // //         addHoverScale(card);
-
-// // // // //         HBox header = new HBox(10);
-// // // // //         header.setAlignment(Pos.CENTER_LEFT);
-// // // // //         Label icon = new Label("🧠");
-// // // // //         Label title = new Label("AI Training Insights");
-// // // // //         title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;");
-// // // // //         header.getChildren().addAll(icon, title);
-
-// // // // //         Label quote = new Label("\"Aashish, your wrist position on the off-drive has shifted 3° inward. Today, focus on maintaining a high elbow finish to stabilize your shot direction.\"");
-// // // // //         quote.setWrapText(true);
-// // // // //         quote.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-style: italic; -fx-line-spacing: 5px;");
-
-// // // // //         VBox plansBox = new VBox(10);
-// // // // //         Label planTitle = new Label("ACTIVE PLANS");
-// // // // //         planTitle.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
-// // // // //         plansBox.getChildren().addAll(
-// // // // //             planTitle,
-// // // // //             createDarkPlanRow("Power Hitting Fundamentals", "75%", true),
-// // // // //             createDarkPlanRow("Reverse Swing Mastery", "Coming Soon", false)
-// // // // //         );
-
-// // // // //         Button vrBtn = new Button("Launch VR Simulation");
-// // // // //         vrBtn.setMaxWidth(Double.MAX_VALUE);
-// // // // //         vrBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;");
-// // // // //         addHoverScale(vrBtn);
-
-// // // // //         card.getChildren().addAll(header, quote, plansBox, vrBtn);
-// // // // //         return card;
-// // // // //     }
-
-// // // // //     private HBox createDarkPlanRow(String title, String val, boolean isGreenVal) {
-// // // // //         HBox row = new HBox();
-// // // // //         Label t = new Label(title);
-// // // // //         t.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-// // // // //         Region spacer = new Region(); 
-// // // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // // //         Label v = new Label(val);
-// // // // //         v.setStyle("-fx-font-size: 12px; -fx-text-fill: " + (isGreenVal ? "#34d399" : "#64748b") + ";");
-// // // // //         row.getChildren().addAll(t, spacer, v);
-// // // // //         return row;
-// // // // //     }
-
-// // // // //     private HBox buildWeatherEquipmentRow() {
-// // // // //         HBox row = new HBox(15);
-// // // // //         VBox weather = new VBox(5);
-// // // // //         weather.setAlignment(Pos.CENTER);
-// // // // //         weather.setPadding(new Insets(15));
-// // // // //         weather.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
-// // // // //         Label wIcon = new Label("☀"); 
-// // // // //         wIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
-// // // // //         Label wTemp = new Label("28°C Clear"); 
-// // // // //         wTemp.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
-// // // // //         Label wSub = new Label("Perfect for Nets"); 
-// // // // //         wSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
-// // // // //         weather.getChildren().addAll(wIcon, wTemp, wSub);
-// // // // //         HBox.setHgrow(weather, Priority.ALWAYS);
-// // // // //         addHoverScale(weather);
-
-// // // // //         VBox equip = new VBox(5);
-// // // // //         equip.setAlignment(Pos.CENTER);
-// // // // //         equip.setPadding(new Insets(15));
-// // // // //         equip.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
-// // // // //         Label eIcon = new Label("🏏"); 
-// // // // //         eIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
-// // // // //         Label eTitle = new Label("Equipment"); 
-// // // // //         eTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
-// // // // //         Label eSub = new Label("2 items needed"); 
-// // // // //         eSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
-// // // // //         equip.getChildren().addAll(eIcon, eTitle, eSub);
-// // // // //         HBox.setHgrow(equip, Priority.ALWAYS);
-// // // // //         addHoverScale(equip);
-
-// // // // //         row.getChildren().addAll(weather, equip);
-// // // // //         return row;
-// // // // //     }
-
-// // // // //     private VBox buildMessagesSection() {
-// // // // //         VBox section = new VBox(15);
-// // // // //         Label title = new Label("COACH MESSAGES");
-// // // // //         title.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-letter-spacing: 1px;");
-
-// // // // //         VBox list = new VBox(15);
-// // // // //         list.getChildren().addAll(
-// // // // //             createMessageItem("RD", "Rahul Dravid", "Check your backlift video from yesterday's session.", "#10b981"),
-// // // // //             createMessageItem("SM", "S. Malinga", "Great yorker consistency. Let's try slow-balls next.", "#6366f1")
-// // // // //         );
-
-// // // // //         section.getChildren().addAll(title, list);
-// // // // //         return section;
-// // // // //     }
-
-// // // // //     private HBox createMessageItem(String initials, String name, String msg, String color) {
-// // // // //         HBox item = new HBox(15);
-// // // // //         Label initLbl = new Label(initials);
-// // // // //         initLbl.setAlignment(Pos.CENTER);
-// // // // //         initLbl.setMinSize(36, 36);
-// // // // //         initLbl.setStyle("-fx-background-color: " + color + "33; -fx-text-fill: " + color + "; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 18;");
-
-// // // // //         VBox texts = new VBox(3);
-// // // // //         Label nameLbl = new Label(name);
-// // // // //         nameLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-// // // // //         Label msgLbl = new Label(msg);
-// // // // //         msgLbl.setWrapText(true);
-// // // // //         msgLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-// // // // //         texts.getChildren().addAll(nameLbl, msgLbl);
-
-// // // // //         item.getChildren().addAll(initLbl, texts);
-// // // // //         addHoverScale(item);
-// // // // //         return item;
-// // // // //     }
-// // // // // }
-
 // // // // package com.athlixcore.view.player.Training_Fitness;
 
 // // // // import javafx.animation.FadeTransition;
@@ -1496,12 +12,16 @@
 // // // // import javafx.scene.control.ScrollPane;
 // // // // import javafx.scene.control.TextField;
 // // // // import javafx.scene.image.Image;
+// // // // import javafx.scene.image.ImageView;
 // // // // import javafx.scene.layout.*;
 // // // // import javafx.scene.paint.Color;
 // // // // import javafx.scene.shape.Circle;
 // // // // import javafx.scene.shape.Polygon;
 // // // // import javafx.scene.shape.Rectangle;
 // // // // import javafx.util.Duration;
+
+// // // // import java.io.File;
+// // // // import java.io.InputStream;
 
 // // // // public class Traning_dashboard {
 
@@ -1606,11 +126,10 @@
 
 // // // //         toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
 
-       
-
+// // // //         // Avatar
 // // // //         Circle avatar = new Circle(20);
 // // // //         try { 
-// // // //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); 
+// // // //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop", true))); 
 // // // //         } catch (Exception e) { 
 // // // //             avatar.setFill(Color.GRAY); 
 // // // //         }
@@ -1618,9 +137,9 @@
 
 // // // //         HBox rightControls = new HBox(18);
 // // // //         rightControls.setAlignment(Pos.CENTER);
-// // // //         rightControls.getChildren().addAll(toggleContainer);
+// // // //         rightControls.getChildren().addAll(toggleContainer, avatar);
 
-// // // //         topBar.getChildren().addAll( spacer, rightControls);
+// // // //         topBar.getChildren().addAll(searchBox, spacer, rightControls);
 // // // //         return topBar;
 // // // //     }
 
@@ -1634,74 +153,8 @@
 
 // // // //     // --- VIEW LOADERS ---
 // // // //     private void loadTrainingView() {
-// // // //         VBox layout = new VBox(20);
-// // // //         layout.setPadding(new Insets(10, 40, 40, 40));
-
-// // // //         // --- SUB-NAVIGATION: TEAM & PERFORMANCE ---
-// // // //         HBox subNav = new HBox(25);
-// // // //         subNav.setAlignment(Pos.CENTER_LEFT);
-
-// // // //         Button teamBtn = new Button("Team");
-// // // //         Button performanceBtn = new Button("Performance");
-
-// // // //         StackPane innerContentArea = new StackPane();
-
-// // // //         // --- THE MAGIC: CLICK LOGIC FOR THE BUTTONS ---
-// // // //         teamBtn.setOnAction(e -> {
-// // // //             styleSubNavTab(teamBtn, true);
-// // // //             styleSubNavTab(performanceBtn, false);
-// // // //             loadTeamContent(innerContentArea);
-// // // //         });
-
-// // // //         performanceBtn.setOnAction(e -> {
-// // // //             styleSubNavTab(performanceBtn, true);
-// // // //             styleSubNavTab(teamBtn, false);
-// // // //             loadPerformanceContent(innerContentArea); // Loads the beautiful Performance UI!
-// // // //         });
-
-// // // //         // Initialize default view to "Team"
-// // // //         styleSubNavTab(teamBtn, true);
-// // // //         styleSubNavTab(performanceBtn, false);
-// // // //         loadTeamContent(innerContentArea);
-
-// // // //         subNav.getChildren().addAll(teamBtn, performanceBtn);
-// // // //         layout.getChildren().addAll(subNav, innerContentArea);
-
-// // // //         ScrollPane scrollPane = new ScrollPane(layout);
-// // // //         scrollPane.setFitToWidth(true);
-// // // //         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
-// // // //         scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
-
-// // // //         contentArea.getChildren().setAll(scrollPane);
-// // // //     }
-
-// // // //     private void styleSubNavTab(Button btn, boolean isActive) {
-// // // //         if (isActive) {
-// // // //             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 16px; -fx-border-color: #10b981; -fx-border-width: 0 0 3 0; -fx-padding: 5 10 5 10; -fx-cursor: hand;");
-// // // //         } else {
-// // // //             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 16px; -fx-border-width: 0; -fx-padding: 5 10 5 10; -fx-cursor: hand;");
-// // // //         }
-// // // //     }
-
-// // // //     // --- LOAD PERFORMANCE CONTENT ---
-// // // //     private void loadPerformanceContent(StackPane container) {
-// // // //         // Instantiate the highly attractive Performance UI class
-// // // //        // Training_Performance performancePage = new Training_Performance();
-        
-// // // //         // Add it directly into the container
-// // // //         //container.getChildren().setAll(performancePage.getView());
-
-// // // //         // Add a smooth fade transition when switching
-// // // //         container.setOpacity(0);
-// // // //         FadeTransition ft = new FadeTransition(Duration.millis(400), container);
-// // // //         ft.setToValue(1.0);
-// // // //         ft.play();
-// // // //     }
-
-// // // //     // --- LOAD TEAM CONTENT ---
-// // // //     private void loadTeamContent(StackPane container) {
 // // // //         VBox layout = new VBox(25);
-// // // //         layout.setPadding(new Insets(10, 0, 0, 0));
+// // // //         layout.setPadding(new Insets(20, 40, 40, 40));
 
 // // // //         Node heroBanner = buildHeroBanner();
 // // // //         Node statsRow = buildStatsRow();
@@ -1709,40 +162,34 @@
 
 // // // //         layout.getChildren().addAll(heroBanner, statsRow, splitArea);
 
-// // // //         // Animate elements sequentially
 // // // //         animateNodeEntrance(heroBanner, 50);
 // // // //         animateNodeEntrance(statsRow, 150);
 // // // //         animateNodeEntrance(splitArea, 250);
 
-// // // //         container.getChildren().setAll(layout);
-        
-// // // //         // Smooth fade transition
-// // // //         container.setOpacity(0);
-// // // //         FadeTransition ft = new FadeTransition(Duration.millis(400), container);
+// // // //         ScrollPane scrollPane = new ScrollPane(layout);
+// // // //         scrollPane.setFitToWidth(true);
+// // // //         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
+// // // //         scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
+
+// // // //         contentArea.getChildren().setAll(scrollPane);
+
+// // // //         contentArea.setOpacity(0);
+// // // //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 // // // //         ft.setToValue(1.0);
 // // // //         ft.play();
 // // // //     }
 
 // // // //     private void loadFitnessView() {
-// // // //         VBox layout = new VBox(20);
-// // // //         layout.setAlignment(Pos.CENTER);
-// // // //         layout.setPadding(new Insets(100, 40, 40, 40));
+// // // //         Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
+// // // //         contentArea.getChildren().setAll(fitnessPage.getView());
 
-// // // //         Label title = new Label("Fitness Dashboard");
-// // // //         title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-// // // //         Label subtitle = new Label("Your personalized fitness tracking and workout plans are coming soon.");
-// // // //         subtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b;");
-
-// // // //         layout.getChildren().addAll(title, subtitle);
-        
-// // // //         animateNodeEntrance(title, 50);
-// // // //         animateNodeEntrance(subtitle, 150);
-
-// // // //         contentArea.getChildren().setAll(layout);
+// // // //         contentArea.setOpacity(0);
+// // // //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
+// // // //         ft.setToValue(1.0);
+// // // //         ft.play();
 // // // //     }
 
-// // // //     // --- HERO BANNER (Team View) ---
+// // // //     // --- HERO BANNER ---
 // // // //     private StackPane buildHeroBanner() {
 // // // //         StackPane bannerPane = new StackPane();
 // // // //         bannerPane.setMinHeight(220);
@@ -1760,7 +207,9 @@
 // // // //         outerRing.setStroke(Color.web("#10b981"));
 // // // //         outerRing.setStrokeWidth(3);
 // // // //         Circle innerAvatar = new Circle(55);
-// // // //         try { innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); } 
+// // // //         try { 
+// // // //             innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop", true))); 
+// // // //         } 
 // // // //         catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
 // // // //         avatarRing.getChildren().addAll(outerRing, innerAvatar);
 // // // //         addHoverScale(avatarRing);
@@ -1794,6 +243,17 @@
 // // // //         startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
 // // // //         addHoverScale(startBtn);
         
+// // // //         startBtn.setOnAction(e -> {
+// // // //             Training_StartButton startPage = new Training_StartButton(() -> {
+// // // //                 loadTrainingView();
+// // // //             });
+// // // //             contentArea.getChildren().setAll(startPage.getView());
+// // // //             contentArea.setOpacity(0);
+// // // //             FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
+// // // //             ft.setToValue(1.0);
+// // // //             ft.play();
+// // // //         });
+        
 // // // //         Button calBtn = new Button("Training\nCalendar");
 // // // //         calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
 // // // //         addHoverScale(calBtn);
@@ -1811,7 +271,7 @@
 // // // //         return bannerPane;
 // // // //     }
 
-// // // //     // --- STATS CARDS (Team View) ---
+// // // //     // --- STATS CARDS ---
 // // // //     private HBox buildStatsRow() {
 // // // //         HBox row = new HBox(20);
 // // // //         row.getChildren().addAll(
@@ -1897,13 +357,13 @@
 // // // //         return l;
 // // // //     }
 
-// // // //     // --- MAIN SPLIT AREA (Team View) ---
+// // // //     // --- MAIN SPLIT AREA ---
 // // // //     private HBox buildMainSplitArea() {
 // // // //         HBox splitLayout = new HBox(30);
 
 // // // //         VBox leftCol = new VBox(30);
 // // // //         HBox.setHgrow(leftCol, Priority.ALWAYS);
-// // // //         leftCol.getChildren().addAll(buildCategoriesSection(), buildAnalyticsSection());
+// // // //         leftCol.getChildren().addAll(buildSkillTrainingSection(), buildAnalyticsSection());
 
 // // // //         VBox rightCol = new VBox(25);
 // // // //         rightCol.setPrefWidth(320);
@@ -1919,70 +379,184 @@
 // // // //         return splitLayout;
 // // // //     }
 
-// // // //     // --- CATEGORIES GRID ---
-// // // //     private VBox buildCategoriesSection() {
-// // // //         VBox section = new VBox(15);
-// // // //         HBox header = new HBox();
-// // // //         Label title = new Label("Training Categories");
-// // // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// // // //         Region spacer = new Region(); 
-// // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // // //         Label viewAll = new Label("View All Drills");
-// // // //         viewAll.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-cursor: hand;");
-// // // //         header.getChildren().addAll(title, spacer, viewAll);
-
-// // // //         GridPane grid = new GridPane();
-// // // //         grid.setHgap(15); 
-// // // //         grid.setVgap(15);
-// // // //         ColumnConstraints cc = new ColumnConstraints(); 
-// // // //         cc.setPercentWidth(33.33);
-// // // //         grid.getColumnConstraints().addAll(cc, cc, cc);
-
-// // // //         grid.add(createImageCard("Batting Practice", "12 Drills Available", "#4f46e5"), 0, 0);
-// // // //         grid.add(createImageCard("Bowling Practice", "8 Drills Available", "#b45309"), 1, 0);
-// // // //         grid.add(createImageCard("Strength & Agility", "15 High-Intensity Plans", "#15803d"), 2, 0);
-// // // //         grid.add(createImageCard("Fielding Practice", "6 Expert Sessions", "#047857"), 0, 1);
-// // // //         grid.add(createImageCard("Video Analysis", "Scan & Compare", "#0f172a"), 1, 1);
+// // // //     // === SKILL SPECIFIC TRAINING WITH IMAGES & INTERACTIVE TABS ===
+// // // //     private VBox buildSkillTrainingSection() {
+// // // //         VBox box = new VBox(15);
         
-// // // //         VBox customCard = new VBox(10);
-// // // //         customCard.setAlignment(Pos.CENTER);
-// // // //         customCard.setMinHeight(130);
-// // // //         customCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-style: dashed; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
-// // // //         Label plusIcon = new Label("⊕");
-// // // //         plusIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: #64748b;");
-// // // //         Label customTxt = new Label("Custom Drill");
-// // // //         customTxt.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
-// // // //         customCard.getChildren().addAll(plusIcon, customTxt);
-// // // //         addHoverScale(customCard);
-// // // //         grid.add(customCard, 2, 1);
+// // // //         HBox header = new HBox(20);
+// // // //         header.setAlignment(Pos.CENTER_LEFT);
+// // // //         Label title = new Label("Skill Specific Training");
+// // // //         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        
+// // // //         HBox tabs = new HBox(10);
+        
+// // // //         Label batTab = createMiniTab("Batting");
+// // // //         Label bowlTab = createMiniTab("Bowling");
+// // // //         Label fieldTab = createMiniTab("Fielding");
+// // // //         Label keepTab = createMiniTab("Keeper");
+        
+// // // //         tabs.getChildren().addAll(batTab, bowlTab, fieldTab, keepTab);
+// // // //         header.getChildren().addAll(title, tabs);
 
-// // // //         section.getChildren().addAll(header, grid);
-// // // //         return section;
+// // // //         HBox cardsContainer = new HBox(15);
+// // // //         for(Node n : cardsContainer.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
+
+// // // //         // Set Tab Active States
+// // // //         setTabActiveState(batTab, true);
+// // // //         setTabActiveState(bowlTab, false);
+// // // //         setTabActiveState(fieldTab, false);
+// // // //         setTabActiveState(keepTab, false);
+        
+// // // //         // Load Default Tab (Batting)
+// // // //         loadSkillCards(cardsContainer, "Batting");
+
+// // // //         // Set Tab Actions
+// // // //         batTab.setOnMouseClicked(e -> {
+// // // //             setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+// // // //             loadSkillCards(cardsContainer, "Batting");
+// // // //         });
+// // // //         bowlTab.setOnMouseClicked(e -> {
+// // // //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+// // // //             loadSkillCards(cardsContainer, "Bowling");
+// // // //         });
+// // // //         fieldTab.setOnMouseClicked(e -> {
+// // // //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
+// // // //             loadSkillCards(cardsContainer, "Fielding");
+// // // //         });
+// // // //         keepTab.setOnMouseClicked(e -> {
+// // // //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
+// // // //             loadSkillCards(cardsContainer, "Keeper");
+// // // //         });
+
+// // // //         box.getChildren().addAll(header, cardsContainer);
+// // // //         return box;
 // // // //     }
 
-// // // //     private StackPane createImageCard(String title, String subtitle, String fallbackColor) {
+// // // //     private Label createMiniTab(String text) {
+// // // //         Label l = new Label(text);
+// // // //         l.setStyle("-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+// // // //         return l;
+// // // //     }
+
+// // // //     private void setTabActiveState(Label tab, boolean isActive) {
+// // // //         if (isActive) {
+// // // //             tab.setStyle("-fx-background-color: white; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 2); -fx-cursor: hand;");
+// // // //         } else {
+// // // //             tab.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+// // // //         }
+// // // //     }
+
+// // // //     private void loadSkillCards(HBox container, String category) {
+// // // //         container.getChildren().clear();
+// // // //         StackPane card1, card2;
+        
+// // // //         switch (category) {
+// // // //             case "Bowling":
+// // // //                 card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "/assests/images/ground1.png");
+// // // //                 card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "/assests/images/ground2.png");
+// // // //                 break;
+// // // //             case "Fielding":
+// // // //                 card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
+// // // //                 card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", "https://images.unsplash.com/photo-1593786480164-9a3b68074d6c?w=400&h=200&fit=crop");
+// // // //                 break;
+// // // //             case "Keeper":
+// // // //                 card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
+// // // //                 card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
+// // // //                 break;
+// // // //             case "Batting":
+// // // //             default:
+// // // //                 card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "/assests/images/stadium.jpg"); 
+// // // //                 card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "/assests/images/ground1.png"); 
+// // // //                 break;
+// // // //         }
+
+// // // //         HBox.setHgrow(card1, Priority.ALWAYS);
+// // // //         HBox.setHgrow(card2, Priority.ALWAYS);
+// // // //         container.getChildren().addAll(card1, card2);
+
+// // // //         container.setOpacity(0);
+// // // //         FadeTransition ft = new FadeTransition(Duration.millis(300), container);
+// // // //         ft.setToValue(1.0);
+// // // //         ft.play();
+// // // //     }
+
+// // // //     // === BULLETPROOF IMAGEVIEW LOADER (NO CSS BACKGROUNDS) ===
+// // // //     private StackPane createVideoCard(String title, String sub, String tag, String imagePath) {
 // // // //         StackPane card = new StackPane();
-// // // //         card.setMinHeight(130);
-// // // //         card.setStyle("-fx-background-color: " + fallbackColor + "; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
+// // // //         card.setMinHeight(160);
+// // // //         card.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
 
-// // // //         Region overlay = new Region();
-// // // //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 12;");
+// // // //         ImageView imageView = new ImageView();
+        
+// // // //         if (imagePath != null && !imagePath.isEmpty()) {
+// // // //             try {
+// // // //                 Image img = null;
+// // // //                 if (imagePath.startsWith("http")) {
+// // // //                     // Load web image in background
+// // // //                     img = new Image(imagePath, true);
+// // // //                 } else {
+// // // //                     // 1. Try Classpath stream first
+// // // //                     InputStream stream = getClass().getResourceAsStream(imagePath);
+// // // //                     if (stream != null) {
+// // // //                         img = new Image(stream);
+// // // //                     } else {
+// // // //                         // 2. VS Code Fallback: Read directly from File System
+// // // //                         String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+// // // //                         File file = new File("src/main/resources/" + cleanPath);
+// // // //                         if (file.exists()) {
+// // // //                             img = new Image(file.toURI().toString(), true);
+// // // //                         } else {
+// // // //                             System.out.println("Could not find image -> " + file.getAbsolutePath());
+// // // //                         }
+// // // //                     }
+// // // //                 }
+                
+// // // //                 if (img != null) {
+// // // //                     imageView.setImage(img);
+// // // //                 }
+// // // //             } catch (Exception e) {
+// // // //                 System.out.println("Exception loading photo: " + imagePath);
+// // // //             }
+// // // //         }
+        
+// // // //         // Bind the ImageView dimensions to fill the StackPane Card dynamically
+// // // //         imageView.fitWidthProperty().bind(card.widthProperty());
+// // // //         imageView.fitHeightProperty().bind(card.heightProperty());
+// // // //         imageView.setPreserveRatio(false); 
 
-// // // //         VBox textData = new VBox(3);
-// // // //         textData.setAlignment(Pos.BOTTOM_LEFT);
-// // // //         textData.setPadding(new Insets(15));
-// // // //         Label tLbl = new Label(title);
-// // // //         tLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: white;");
-// // // //         Label sLbl = new Label(subtitle);
-// // // //         sLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #34d399;");
-// // // //         textData.getChildren().addAll(tLbl, sLbl);
+// // // //         // Create a clip to ensure the ImageView perfectly matches the rounded card corners
+// // // //         Rectangle clip = new Rectangle();
+// // // //         clip.widthProperty().bind(card.widthProperty());
+// // // //         clip.heightProperty().bind(card.heightProperty());
+// // // //         clip.setArcWidth(24); 
+// // // //         clip.setArcHeight(24);
+// // // //         imageView.setClip(clip);
 
-// // // //         card.getChildren().addAll(overlay, textData);
 // // // //         addHoverScale(card);
+
+// // // //         // Dark gradient overlay so text remains readable
+// // // //         Region overlay = new Region();
+// // // //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
+
+// // // //         VBox content = new VBox(5);
+// // // //         content.setAlignment(Pos.BOTTOM_LEFT);
+// // // //         content.setPadding(new Insets(15));
+        
+// // // //         Label t = new Label(title);
+// // // //         t.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+// // // //         Label s = new Label(sub);
+// // // //         s.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
+// // // //         Label tg = new Label(tag);
+// // // //         tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
+        
+// // // //         content.getChildren().addAll(t, s, tg);
+        
+// // // //         // Combine everything (ImageView is added FIRST so it sits behind the overlay and text)
+// // // //         card.getChildren().addAll(imageView, overlay, content);
 // // // //         return card;
 // // // //     }
 
-// // // //     // --- ANALYTICS (Team View) ---
+// // // //     // --- ANALYTICS ---
 // // // //     private VBox buildAnalyticsSection() {
 // // // //         VBox box = new VBox(20);
 // // // //         box.setPadding(new Insets(25));
@@ -2084,7 +658,7 @@
 // // // //     private VBox createGrowthBox(String title, String val, String valColor) {
 // // // //         VBox box = new VBox(5);
 // // // //         box.setPadding(new Insets(10, 15, 10, 15));
-// // // //         box.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8;");
+// // // //         box.setStyle("-fx-background-color: #f8fafc; -background-radius: 8;");
 // // // //         Label t = new Label(title);
 // // // //         t.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
 // // // //         Label v = new Label(val);
@@ -2093,7 +667,7 @@
 // // // //         return box;
 // // // //     }
 
-// // // //     // --- RIGHT SIDEBAR SCHEDULE & AI (Team View) ---
+// // // //     // --- SCHEDULE & AI SECTION ---
 // // // //     private VBox buildScheduleSection() {
 // // // //         VBox section = new VBox(15);
 // // // //         HBox header = new HBox();
@@ -2273,6 +847,7 @@
 // // // import javafx.scene.control.ScrollPane;
 // // // import javafx.scene.control.TextField;
 // // // import javafx.scene.image.Image;
+// // // import javafx.scene.image.ImageView;
 // // // import javafx.scene.layout.*;
 // // // import javafx.scene.paint.Color;
 // // // import javafx.scene.shape.Circle;
@@ -2280,27 +855,31 @@
 // // // import javafx.scene.shape.Rectangle;
 // // // import javafx.util.Duration;
 
+// // // import java.io.File;
+// // // import java.io.InputStream;
+
 // // // public class Traning_dashboard {
 
 // // //     private BorderPane rootContainer;
 // // //     private StackPane contentArea;
 // // //     private Button trainingTabBtn;
 // // //     private Button fitnessTabBtn;
+    
+// // //     // --- ANTI-SPAM FLAG ---
+// // //     // Prevents multiple clicks from triggering overlapping UI transitions
+// // //     private boolean isTransitioning = false;
 
 // // //     public Node getView() {
 // // //         if (rootContainer == null) {
 // // //             rootContainer = new BorderPane();
 // // //             rootContainer.setStyle("-fx-background-color: #f8fafc;");
 
-// // //             // Create the fixed Top Bar (Search + Training/Fitness Toggle + Profile)
 // // //             Node topBar = buildTopBar();
 // // //             rootContainer.setTop(topBar);
 
-// // //             // Create the dynamic Content Area for switching between Training & Fitness
 // // //             contentArea = new StackPane();
 // // //             rootContainer.setCenter(contentArea);
 
-// // //             // Load Training by default
 // // //             loadTrainingView();
 // // //         }
 // // //         return rootContainer;
@@ -2331,8 +910,12 @@
 // // //         scaleOut.setToX(1.0); 
 // // //         scaleOut.setToY(1.0);
 
-// // //         node.setOnMouseEntered(e -> scaleIn.playFromStart());
-// // //         node.setOnMouseExited(e -> scaleOut.playFromStart());
+// // //         node.setOnMouseEntered(e -> {
+// // //             if (!isTransitioning) scaleIn.playFromStart();
+// // //         });
+// // //         node.setOnMouseExited(e -> {
+// // //             if (!isTransitioning) scaleOut.playFromStart();
+// // //         });
 // // //     }
 
 // // //     // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
@@ -2342,7 +925,6 @@
 // // //         topBar.setPadding(new Insets(20, 40, 10, 40));
 // // //         topBar.setStyle("-fx-background-color: #f8fafc;");
 
-// // //         // Search Bar
 // // //         HBox searchBox = new HBox(10);
 // // //         searchBox.setAlignment(Pos.CENTER_LEFT);
 // // //         searchBox.setStyle("-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 10 20; -fx-border-color: #e2e8f0; -fx-border-radius: 25;");
@@ -2358,7 +940,6 @@
 // // //         Region spacer = new Region();
 // // //         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-// // //         // --- TRAINING & FITNESS TOGGLE BUTTONS ---
 // // //         HBox toggleContainer = new HBox(5);
 // // //         toggleContainer.setAlignment(Pos.CENTER);
 // // //         toggleContainer.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 4;");
@@ -2370,12 +951,14 @@
 // // //         styleMainToggleButton(fitnessTabBtn, false);
 
 // // //         trainingTabBtn.setOnAction(e -> {
+// // //             if (isTransitioning) return; // Prevent spam clicks
 // // //             styleMainToggleButton(trainingTabBtn, true);
 // // //             styleMainToggleButton(fitnessTabBtn, false);
 // // //             loadTrainingView();
 // // //         });
 
 // // //         fitnessTabBtn.setOnAction(e -> {
+// // //             if (isTransitioning) return; // Prevent spam clicks
 // // //             styleMainToggleButton(fitnessTabBtn, true);
 // // //             styleMainToggleButton(trainingTabBtn, false);
 // // //             loadFitnessView();
@@ -2383,11 +966,9 @@
 
 // // //         toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
 
-// // //         // Icons & Avatar
-       
 // // //         Circle avatar = new Circle(20);
 // // //         try { 
-// // //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); 
+// // //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop", true))); 
 // // //         } catch (Exception e) { 
 // // //             avatar.setFill(Color.GRAY); 
 // // //         }
@@ -2395,9 +976,9 @@
 
 // // //         HBox rightControls = new HBox(18);
 // // //         rightControls.setAlignment(Pos.CENTER);
-// // //         rightControls.getChildren().addAll(toggleContainer);
+// // //         rightControls.getChildren().addAll(toggleContainer, avatar);
 
-// // //         topBar.getChildren().addAll( spacer, rightControls);
+// // //         topBar.getChildren().addAll(searchBox, spacer, rightControls);
 // // //         return topBar;
 // // //     }
 
@@ -2411,6 +992,9 @@
 
 // // //     // --- VIEW LOADERS ---
 // // //     private void loadTrainingView() {
+// // //         if (isTransitioning) return;
+// // //         isTransitioning = true;
+
 // // //         VBox layout = new VBox(25);
 // // //         layout.setPadding(new Insets(20, 40, 40, 40));
 
@@ -2420,7 +1004,6 @@
 
 // // //         layout.getChildren().addAll(heroBanner, statsRow, splitArea);
 
-// // //         // Animate elements sequentially
 // // //         animateNodeEntrance(heroBanner, 50);
 // // //         animateNodeEntrance(statsRow, 150);
 // // //         animateNodeEntrance(splitArea, 250);
@@ -2432,35 +1015,24 @@
 
 // // //         contentArea.getChildren().setAll(scrollPane);
 
-// // //         // Smooth fade transition for the container replacement
 // // //         contentArea.setOpacity(0);
 // // //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 // // //         ft.setToValue(1.0);
+// // //         ft.setOnFinished(e -> isTransitioning = false); // Release lock
 // // //         ft.play();
 // // //     }
 
 // // //     private void loadFitnessView() {
-// // //         VBox layout = new VBox(20);
-// // //         layout.setAlignment(Pos.CENTER);
-// // //         layout.setPadding(new Insets(100, 40, 40, 40));
+// // //         if (isTransitioning) return;
+// // //         isTransitioning = true;
 
-// // //         Label title = new Label("Fitness Dashboard");
-// // //         title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-// // //         Label subtitle = new Label("Your personalized fitness tracking and workout plans are coming soon.");
-// // //         subtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b;");
+// // //         Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
+// // //         contentArea.getChildren().setAll(fitnessPage.getView());
 
-// // //         layout.getChildren().addAll(title, subtitle);
-        
-// // //         animateNodeEntrance(title, 50);
-// // //         animateNodeEntrance(subtitle, 150);
-
-// // //         contentArea.getChildren().setAll(layout);
-
-// // //         // Smooth fade transition for the container replacement
 // // //         contentArea.setOpacity(0);
 // // //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 // // //         ft.setToValue(1.0);
+// // //         ft.setOnFinished(e -> isTransitioning = false); // Release lock
 // // //         ft.play();
 // // //     }
 
@@ -2482,7 +1054,9 @@
 // // //         outerRing.setStroke(Color.web("#10b981"));
 // // //         outerRing.setStrokeWidth(3);
 // // //         Circle innerAvatar = new Circle(55);
-// // //         try { innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); } 
+// // //         try { 
+// // //             innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop", true))); 
+// // //         } 
 // // //         catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
 // // //         avatarRing.getChildren().addAll(outerRing, innerAvatar);
 // // //         addHoverScale(avatarRing);
@@ -2515,6 +1089,21 @@
 // // //         Button startBtn = new Button("Start\nTraining");
 // // //         startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
 // // //         addHoverScale(startBtn);
+        
+// // //         startBtn.setOnAction(e -> {
+// // //             if (isTransitioning) return; // Prevent spam clicks
+// // //             isTransitioning = true;
+
+// // //             Training_StartButton startPage = new Training_StartButton(() -> {
+// // //                 loadTrainingView();
+// // //             });
+// // //             contentArea.getChildren().setAll(startPage.getView());
+// // //             contentArea.setOpacity(0);
+// // //             FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
+// // //             ft.setToValue(1.0);
+// // //             ft.setOnFinished(evt -> isTransitioning = false); // Release lock
+// // //             ft.play();
+// // //         });
         
 // // //         Button calBtn = new Button("Training\nCalendar");
 // // //         calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
@@ -2625,7 +1214,7 @@
 
 // // //         VBox leftCol = new VBox(30);
 // // //         HBox.setHgrow(leftCol, Priority.ALWAYS);
-// // //         leftCol.getChildren().addAll(buildCategoriesSection(), buildAnalyticsSection());
+// // //         leftCol.getChildren().addAll(buildSkillTrainingSection(), buildAnalyticsSection());
 
 // // //         VBox rightCol = new VBox(25);
 // // //         rightCol.setPrefWidth(320);
@@ -2641,66 +1230,176 @@
 // // //         return splitLayout;
 // // //     }
 
-// // //     // --- CATEGORIES GRID ---
-// // //     private VBox buildCategoriesSection() {
-// // //         VBox section = new VBox(15);
-// // //         HBox header = new HBox();
-// // //         Label title = new Label("Training Categories");
-// // //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// // //         Region spacer = new Region(); 
-// // //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// // //         Label viewAll = new Label("View All Drills");
-// // //         viewAll.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-cursor: hand;");
-// // //         header.getChildren().addAll(title, spacer, viewAll);
-
-// // //         GridPane grid = new GridPane();
-// // //         grid.setHgap(15); 
-// // //         grid.setVgap(15);
-// // //         ColumnConstraints cc = new ColumnConstraints(); 
-// // //         cc.setPercentWidth(33.33);
-// // //         grid.getColumnConstraints().addAll(cc, cc, cc);
-
-// // //         grid.add(createImageCard("Batting Practice", "12 Drills Available", "#4f46e5"), 0, 0);
-// // //         grid.add(createImageCard("Bowling Practice", "8 Drills Available", "#b45309"), 1, 0);
-// // //         grid.add(createImageCard("Strength & Agility", "15 High-Intensity Plans", "#15803d"), 2, 0);
-// // //         grid.add(createImageCard("Fielding Practice", "6 Expert Sessions", "#047857"), 0, 1);
-// // //         grid.add(createImageCard("Video Analysis", "Scan & Compare", "#0f172a"), 1, 1);
+// // //     // === SKILL SPECIFIC TRAINING WITH IMAGES & INTERACTIVE TABS ===
+// // //     private VBox buildSkillTrainingSection() {
+// // //         VBox box = new VBox(15);
         
-// // //         VBox customCard = new VBox(10);
-// // //         customCard.setAlignment(Pos.CENTER);
-// // //         customCard.setMinHeight(130);
-// // //         customCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-style: dashed; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
-// // //         Label plusIcon = new Label("⊕");
-// // //         plusIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: #64748b;");
-// // //         Label customTxt = new Label("Custom Drill");
-// // //         customTxt.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
-// // //         customCard.getChildren().addAll(plusIcon, customTxt);
-// // //         addHoverScale(customCard);
-// // //         grid.add(customCard, 2, 1);
+// // //         HBox header = new HBox(20);
+// // //         header.setAlignment(Pos.CENTER_LEFT);
+// // //         Label title = new Label("Skill Specific Training");
+// // //         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        
+// // //         HBox tabs = new HBox(10);
+        
+// // //         Label batTab = createMiniTab("Batting");
+// // //         Label bowlTab = createMiniTab("Bowling");
+// // //         Label fieldTab = createMiniTab("Fielding");
+// // //         Label keepTab = createMiniTab("Keeper");
+        
+// // //         tabs.getChildren().addAll(batTab, bowlTab, fieldTab, keepTab);
+// // //         header.getChildren().addAll(title, tabs);
 
-// // //         section.getChildren().addAll(header, grid);
-// // //         return section;
+// // //         HBox cardsContainer = new HBox(15);
+// // //         for(Node n : cardsContainer.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
+
+// // //         // Load Default Tab
+// // //         setTabActiveState(batTab, true);
+// // //         setTabActiveState(bowlTab, false);
+// // //         setTabActiveState(fieldTab, false);
+// // //         setTabActiveState(keepTab, false);
+// // //         loadSkillCards(cardsContainer, "Batting");
+
+// // //         // Set Tab Actions (with debounce logic)
+// // //         batTab.setOnMouseClicked(e -> {
+// // //             if (isTransitioning) return;
+// // //             setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+// // //             loadSkillCards(cardsContainer, "Batting");
+// // //         });
+// // //         bowlTab.setOnMouseClicked(e -> {
+// // //             if (isTransitioning) return;
+// // //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+// // //             loadSkillCards(cardsContainer, "Bowling");
+// // //         });
+// // //         fieldTab.setOnMouseClicked(e -> {
+// // //             if (isTransitioning) return;
+// // //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
+// // //             loadSkillCards(cardsContainer, "Fielding");
+// // //         });
+// // //         keepTab.setOnMouseClicked(e -> {
+// // //             if (isTransitioning) return;
+// // //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
+// // //             loadSkillCards(cardsContainer, "Keeper");
+// // //         });
+
+// // //         box.getChildren().addAll(header, cardsContainer);
+// // //         return box;
 // // //     }
 
-// // //     private StackPane createImageCard(String title, String subtitle, String fallbackColor) {
+// // //     private Label createMiniTab(String text) {
+// // //         Label l = new Label(text);
+// // //         l.setStyle("-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+// // //         return l;
+// // //     }
+
+// // //     private void setTabActiveState(Label tab, boolean isActive) {
+// // //         if (isActive) {
+// // //             tab.setStyle("-fx-background-color: white; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 2); -fx-cursor: hand;");
+// // //         } else {
+// // //             tab.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+// // //         }
+// // //     }
+
+// // //     private void loadSkillCards(HBox container, String category) {
+// // //         isTransitioning = true; // Lock transitions
+// // //         container.getChildren().clear();
+// // //         StackPane card1, card2;
+        
+// // //         switch (category) {
+// // //             case "Bowling":
+// // //                 card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "/assests/images/ground1.png");
+// // //                 card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "/assests/images/ground2.png");
+// // //                 break;
+// // //             case "Fielding":
+// // //                 card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
+// // //                 card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", "https://images.unsplash.com/photo-1593786480164-9a3b68074d6c?w=400&h=200&fit=crop");
+// // //                 break;
+// // //             case "Keeper":
+// // //                 card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
+// // //                 card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
+// // //                 break;
+// // //             case "Batting":
+// // //             default:
+// // //                 card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "/assests/images/stadium.jpg"); 
+// // //                 card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "/assests/images/ground1.png"); 
+// // //                 break;
+// // //         }
+
+// // //         HBox.setHgrow(card1, Priority.ALWAYS);
+// // //         HBox.setHgrow(card2, Priority.ALWAYS);
+// // //         container.getChildren().addAll(card1, card2);
+
+// // //         container.setOpacity(0);
+// // //         FadeTransition ft = new FadeTransition(Duration.millis(300), container);
+// // //         ft.setToValue(1.0);
+// // //         ft.setOnFinished(e -> isTransitioning = false); // Release lock
+// // //         ft.play();
+// // //     }
+
+// // //     // === BULLETPROOF IMAGEVIEW LOADER ===
+// // //     private StackPane createVideoCard(String title, String sub, String tag, String imagePath) {
 // // //         StackPane card = new StackPane();
-// // //         card.setMinHeight(130);
-// // //         card.setStyle("-fx-background-color: " + fallbackColor + "; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
+// // //         card.setMinHeight(160);
+// // //         card.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
+
+// // //         ImageView imageView = new ImageView();
+        
+// // //         if (imagePath != null && !imagePath.isEmpty()) {
+// // //             try {
+// // //                 Image img = null;
+// // //                 if (imagePath.startsWith("http")) {
+// // //                     img = new Image(imagePath, true);
+// // //                 } else {
+// // //                     InputStream stream = getClass().getResourceAsStream(imagePath);
+// // //                     if (stream != null) {
+// // //                         img = new Image(stream);
+// // //                     } else {
+// // //                         String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+// // //                         File file = new File("src/main/resources/" + cleanPath);
+// // //                         if (file.exists()) {
+// // //                             img = new Image(file.toURI().toString(), true);
+// // //                         } else {
+// // //                             System.out.println("Could not find image -> " + file.getAbsolutePath());
+// // //                         }
+// // //                     }
+// // //                 }
+                
+// // //                 if (img != null) {
+// // //                     imageView.setImage(img);
+// // //                 }
+// // //             } catch (Exception e) {
+// // //                 System.out.println("Exception loading photo: " + imagePath);
+// // //             }
+// // //         }
+        
+// // //         imageView.fitWidthProperty().bind(card.widthProperty());
+// // //         imageView.fitHeightProperty().bind(card.heightProperty());
+// // //         imageView.setPreserveRatio(false); 
+
+// // //         Rectangle clip = new Rectangle();
+// // //         clip.widthProperty().bind(card.widthProperty());
+// // //         clip.heightProperty().bind(card.heightProperty());
+// // //         clip.setArcWidth(24); 
+// // //         clip.setArcHeight(24);
+// // //         imageView.setClip(clip);
+
+// // //         addHoverScale(card);
 
 // // //         Region overlay = new Region();
-// // //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 12;");
+// // //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
 
-// // //         VBox textData = new VBox(3);
-// // //         textData.setAlignment(Pos.BOTTOM_LEFT);
-// // //         textData.setPadding(new Insets(15));
-// // //         Label tLbl = new Label(title);
-// // //         tLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: white;");
-// // //         Label sLbl = new Label(subtitle);
-// // //         sLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #34d399;");
-// // //         textData.getChildren().addAll(tLbl, sLbl);
-
-// // //         card.getChildren().addAll(overlay, textData);
-// // //         addHoverScale(card);
+// // //         VBox content = new VBox(5);
+// // //         content.setAlignment(Pos.BOTTOM_LEFT);
+// // //         content.setPadding(new Insets(15));
+        
+// // //         Label t = new Label(title);
+// // //         t.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+// // //         Label s = new Label(sub);
+// // //         s.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
+// // //         Label tg = new Label(tag);
+// // //         tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
+        
+// // //         content.getChildren().addAll(t, s, tg);
+// // //         card.getChildren().addAll(imageView, overlay, content);
 // // //         return card;
 // // //     }
 
@@ -2980,7 +1679,6 @@
 // // //         return item;
 // // //     }
 // // // }
-
 // // package com.athlixcore.view.player.Training_Fitness;
 
 // // import javafx.animation.FadeTransition;
@@ -2995,6 +1693,7 @@
 // // import javafx.scene.control.ScrollPane;
 // // import javafx.scene.control.TextField;
 // // import javafx.scene.image.Image;
+// // import javafx.scene.image.ImageView;
 // // import javafx.scene.layout.*;
 // // import javafx.scene.paint.Color;
 // // import javafx.scene.shape.Circle;
@@ -3008,6 +1707,10 @@
 // //     private StackPane contentArea;
 // //     private Button trainingTabBtn;
 // //     private Button fitnessTabBtn;
+
+// //     // --- ANTI-SPAM FLAG ---
+// //     // Prevents hallucination/overlap if the user clicks multiple times quickly
+// //     private boolean isTransitioning = false;
 
 // //     public Node getView() {
 // //         if (rootContainer == null) {
@@ -3053,8 +1756,12 @@
 // //         scaleOut.setToX(1.0); 
 // //         scaleOut.setToY(1.0);
 
-// //         node.setOnMouseEntered(e -> scaleIn.playFromStart());
-// //         node.setOnMouseExited(e -> scaleOut.playFromStart());
+// //         node.setOnMouseEntered(e -> {
+// //             if (!isTransitioning) scaleIn.playFromStart();
+// //         });
+// //         node.setOnMouseExited(e -> {
+// //             if (!isTransitioning) scaleOut.playFromStart();
+// //         });
 // //     }
 
 // //     // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
@@ -3092,12 +1799,14 @@
 // //         styleMainToggleButton(fitnessTabBtn, false);
 
 // //         trainingTabBtn.setOnAction(e -> {
+// //             if (isTransitioning) return; // Prevent spam clicks
 // //             styleMainToggleButton(trainingTabBtn, true);
 // //             styleMainToggleButton(fitnessTabBtn, false);
 // //             loadTrainingView();
 // //         });
 
 // //         fitnessTabBtn.setOnAction(e -> {
+// //             if (isTransitioning) return; // Prevent spam clicks
 // //             styleMainToggleButton(fitnessTabBtn, true);
 // //             styleMainToggleButton(trainingTabBtn, false);
 // //             loadFitnessView();
@@ -3108,7 +1817,7 @@
 // //         // Avatar
 // //         Circle avatar = new Circle(20);
 // //         try { 
-// //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); 
+// //             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop", true))); 
 // //         } catch (Exception e) { 
 // //             avatar.setFill(Color.GRAY); 
 // //         }
@@ -3132,6 +1841,7 @@
 
 // //     // --- VIEW LOADERS ---
 // //     private void loadTrainingView() {
+// //         isTransitioning = true;
 // //         VBox layout = new VBox(25);
 // //         layout.setPadding(new Insets(20, 40, 40, 40));
 
@@ -3141,7 +1851,6 @@
 
 // //         layout.getChildren().addAll(heroBanner, statsRow, splitArea);
 
-// //         // Animate elements sequentially
 // //         animateNodeEntrance(heroBanner, 50);
 // //         animateNodeEntrance(statsRow, 150);
 // //         animateNodeEntrance(splitArea, 250);
@@ -3153,35 +1862,22 @@
 
 // //         contentArea.getChildren().setAll(scrollPane);
 
-// //         // Smooth fade transition for the container replacement
 // //         contentArea.setOpacity(0);
 // //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 // //         ft.setToValue(1.0);
+// //         ft.setOnFinished(e -> isTransitioning = false);
 // //         ft.play();
 // //     }
 
 // //     private void loadFitnessView() {
-// //         VBox layout = new VBox(20);
-// //         layout.setAlignment(Pos.CENTER);
-// //         layout.setPadding(new Insets(100, 40, 40, 40));
+// //         isTransitioning = true;
+// //         Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
+// //         contentArea.getChildren().setAll(fitnessPage.getView());
 
-// //         Label title = new Label("Fitness Dashboard");
-// //         title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-// //         Label subtitle = new Label("Your personalized fitness tracking and workout plans are coming soon.");
-// //         subtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b;");
-
-// //         layout.getChildren().addAll(title, subtitle);
-        
-// //         animateNodeEntrance(title, 50);
-// //         animateNodeEntrance(subtitle, 150);
-
-// //         contentArea.getChildren().setAll(layout);
-
-// //         // Smooth fade transition for the container replacement
 // //         contentArea.setOpacity(0);
 // //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 // //         ft.setToValue(1.0);
+// //         ft.setOnFinished(e -> isTransitioning = false);
 // //         ft.play();
 // //     }
 
@@ -3203,7 +1899,9 @@
 // //         outerRing.setStroke(Color.web("#10b981"));
 // //         outerRing.setStrokeWidth(3);
 // //         Circle innerAvatar = new Circle(55);
-// //         try { innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); } 
+// //         try { 
+// //             innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("assests/images/Virat.jpg", true))); 
+// //         } 
 // //         catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
 // //         avatarRing.getChildren().addAll(outerRing, innerAvatar);
 // //         addHoverScale(avatarRing);
@@ -3233,27 +1931,24 @@
 // //         aiValue.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold; -fx-font-size: 16px;");
 // //         aiScoreBox.getChildren().addAll(aiTitle, aiValue);
 
-// //         // === MODIFIED START TRAINING BUTTON WITH CLICK LOGIC ===
 // //         Button startBtn = new Button("Start\nTraining");
 // //         startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
 // //         addHoverScale(startBtn);
         
 // //         startBtn.setOnAction(e -> {
-// //             // Instantiate the new page, and pass a callback to load back the Training view
+// //             if (isTransitioning) return;
+// //             isTransitioning = true;
+            
 // //             Training_StartButton startPage = new Training_StartButton(() -> {
 // //                 loadTrainingView();
 // //             });
-            
-// //             // Set the new UI into the center content area
 // //             contentArea.getChildren().setAll(startPage.getView());
-            
-// //             // Apply a smooth fade transition
 // //             contentArea.setOpacity(0);
 // //             FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
 // //             ft.setToValue(1.0);
+// //             ft.setOnFinished(evt -> isTransitioning = false);
 // //             ft.play();
 // //         });
-// //         // =======================================================
         
 // //         Button calBtn = new Button("Training\nCalendar");
 // //         calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
@@ -3364,7 +2059,7 @@
 
 // //         VBox leftCol = new VBox(30);
 // //         HBox.setHgrow(leftCol, Priority.ALWAYS);
-// //         leftCol.getChildren().addAll(buildCategoriesSection(), buildAnalyticsSection());
+// //         leftCol.getChildren().addAll(buildSkillTrainingSection(), buildAnalyticsSection());
 
 // //         VBox rightCol = new VBox(25);
 // //         rightCol.setPrefWidth(320);
@@ -3380,66 +2075,181 @@
 // //         return splitLayout;
 // //     }
 
-// //     // --- CATEGORIES GRID ---
-// //     private VBox buildCategoriesSection() {
-// //         VBox section = new VBox(15);
-// //         HBox header = new HBox();
-// //         Label title = new Label("Training Categories");
-// //         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-// //         Region spacer = new Region(); 
-// //         HBox.setHgrow(spacer, Priority.ALWAYS);
-// //         Label viewAll = new Label("View All Drills");
-// //         viewAll.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-cursor: hand;");
-// //         header.getChildren().addAll(title, spacer, viewAll);
-
-// //         GridPane grid = new GridPane();
-// //         grid.setHgap(15); 
-// //         grid.setVgap(15);
-// //         ColumnConstraints cc = new ColumnConstraints(); 
-// //         cc.setPercentWidth(33.33);
-// //         grid.getColumnConstraints().addAll(cc, cc, cc);
-
-// //         grid.add(createImageCard("Batting Practice", "12 Drills Available", "#4f46e5"), 0, 0);
-// //         grid.add(createImageCard("Bowling Practice", "8 Drills Available", "#b45309"), 1, 0);
-// //         grid.add(createImageCard("Strength & Agility", "15 High-Intensity Plans", "#15803d"), 2, 0);
-// //         grid.add(createImageCard("Fielding Practice", "6 Expert Sessions", "#047857"), 0, 1);
-// //         grid.add(createImageCard("Video Analysis", "Scan & Compare", "#0f172a"), 1, 1);
+// //     // === SKILL SPECIFIC TRAINING WITH IMAGES & INTERACTIVE TABS ===
+// //     private VBox buildSkillTrainingSection() {
+// //         VBox box = new VBox(15);
         
-// //         VBox customCard = new VBox(10);
-// //         customCard.setAlignment(Pos.CENTER);
-// //         customCard.setMinHeight(130);
-// //         customCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-style: dashed; -fx-border-width: 2; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
-// //         Label plusIcon = new Label("⊕");
-// //         plusIcon.setStyle("-fx-font-size: 24px; -fx-text-fill: #64748b;");
-// //         Label customTxt = new Label("Custom Drill");
-// //         customTxt.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
-// //         customCard.getChildren().addAll(plusIcon, customTxt);
-// //         addHoverScale(customCard);
-// //         grid.add(customCard, 2, 1);
+// //         HBox header = new HBox(20);
+// //         header.setAlignment(Pos.CENTER_LEFT);
+// //         Label title = new Label("Skill Specific Training");
+// //         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        
+// //         HBox tabs = new HBox(10);
+        
+// //         Label batTab = createMiniTab("Batting");
+// //         Label bowlTab = createMiniTab("Bowling");
+// //         Label fieldTab = createMiniTab("Fielding");
+// //         Label keepTab = createMiniTab("Keeper");
+        
+// //         tabs.getChildren().addAll(batTab, bowlTab, fieldTab, keepTab);
+// //         header.getChildren().addAll(title, tabs);
 
-// //         section.getChildren().addAll(header, grid);
-// //         return section;
+// //         HBox cardsContainer = new HBox(15);
+// //         for(Node n : cardsContainer.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
+
+// //         // Load Default Tab (Batting)
+// //         setTabActiveState(batTab, true);
+// //         setTabActiveState(bowlTab, false);
+// //         setTabActiveState(fieldTab, false);
+// //         setTabActiveState(keepTab, false);
+// //         loadSkillCards(cardsContainer, "Batting");
+
+// //         // Set Tab Actions (Anti-Spam logic active here)
+// //         batTab.setOnMouseClicked(e -> {
+// //             if (isTransitioning) return;
+// //             setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+// //             loadSkillCards(cardsContainer, "Batting");
+// //         });
+// //         bowlTab.setOnMouseClicked(e -> {
+// //             if (isTransitioning) return;
+// //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+// //             loadSkillCards(cardsContainer, "Bowling");
+// //         });
+// //         fieldTab.setOnMouseClicked(e -> {
+// //             if (isTransitioning) return;
+// //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
+// //             loadSkillCards(cardsContainer, "Fielding");
+// //         });
+// //         keepTab.setOnMouseClicked(e -> {
+// //             if (isTransitioning) return;
+// //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
+// //             loadSkillCards(cardsContainer, "Keeper");
+// //         });
+
+// //         box.getChildren().addAll(header, cardsContainer);
+// //         return box;
 // //     }
 
-// //     private StackPane createImageCard(String title, String subtitle, String fallbackColor) {
+// //     private Label createMiniTab(String text) {
+// //         Label l = new Label(text);
+// //         l.setStyle("-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+// //         return l;
+// //     }
+
+// //     private void setTabActiveState(Label tab, boolean isActive) {
+// //         if (isActive) {
+// //             tab.setStyle("-fx-background-color: white; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 2); -fx-cursor: hand;");
+// //         } else {
+// //             tab.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+// //         }
+// //     }
+
+// //     private void loadSkillCards(HBox container, String category) {
+// //         isTransitioning = true; // Lock clicks until transition finishes
+// //         container.getChildren().clear();
+// //         StackPane card1, card2;
+        
+// //         switch (category) {
+// //             case "Bowling":
+// //                 card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "/assests/images/ground1.png");
+// //                 card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "/assests/images/ground2.png");
+// //                 break;
+// //             case "Fielding":
+// //                 card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
+// //                 card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", "https://images.unsplash.com/photo-1593786480164-9a3b68074d6c?w=400&h=200&fit=crop");
+// //                 break;
+// //             case "Keeper":
+// //                 card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
+// //                 card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
+// //                 break;
+// //             case "Batting":
+// //             default:
+// //                 card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "/assests/images/stadium.jpg"); 
+// //                 card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "/assests/images/ground1.png"); 
+// //                 break;
+// //         }
+
+// //         HBox.setHgrow(card1, Priority.ALWAYS);
+// //         HBox.setHgrow(card2, Priority.ALWAYS);
+// //         container.getChildren().addAll(card1, card2);
+
+// //         container.setOpacity(0);
+// //         FadeTransition ft = new FadeTransition(Duration.millis(300), container);
+// //         ft.setToValue(1.0);
+// //         ft.setOnFinished(e -> isTransitioning = false); // Release lock
+// //         ft.play();
+// //     }
+
+// //     // === BULLETPROOF IMAGEVIEW LOADER (SOLVES VS CODE NULL ERROR) ===
+// //     private StackPane createVideoCard(String title, String sub, String tag, String imagePath) {
 // //         StackPane card = new StackPane();
-// //         card.setMinHeight(130);
-// //         card.setStyle("-fx-background-color: " + fallbackColor + "; -fx-background-radius: 12; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);");
+// //         card.setMinHeight(160);
+// //         card.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
 
-// //         Region overlay = new Region();
-// //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 12;");
+// //         ImageView imageView = new ImageView();
+        
+// //         if (imagePath != null && !imagePath.isEmpty()) {
+// //             try {
+// //                 if (imagePath.startsWith("http")) {
+// //                     imageView.setImage(new Image(imagePath, true));
+// //                 } else {
+// //                     // Remove leading slash for local file loading
+// //                     String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+                    
+// //                     // Directly access the src folder (Bypasses VS Code classpath compilation errors)
+// //                     java.io.File localFile = new java.io.File("src/main/resources/" + cleanPath);
+                    
+// //                     if (localFile.exists()) {
+// //                         imageView.setImage(new Image(localFile.toURI().toString(), true));
+// //                     } else {
+// //                         // If direct file fails, try the classpath as a last resort
+// //                         java.io.InputStream stream = getClass().getResourceAsStream(imagePath);
+// //                         if (stream != null) {
+// //                             imageView.setImage(new Image(stream));
+// //                         } else {
+// //                             System.out.println("❌ IMAGE NOT FOUND! Expected path: " + localFile.getAbsolutePath());
+// //                         }
+// //                     }
+// //                 }
+// //             } catch (Exception e) {
+// //                 System.out.println("❌ Exception loading photo: " + imagePath);
+// //             }
+// //         }
+        
+// //         // Bind the ImageView dimensions to fill the StackPane Card
+// //         imageView.fitWidthProperty().bind(card.widthProperty());
+// //         imageView.fitHeightProperty().bind(card.heightProperty());
+// //         imageView.setPreserveRatio(false); 
 
-// //         VBox textData = new VBox(3);
-// //         textData.setAlignment(Pos.BOTTOM_LEFT);
-// //         textData.setPadding(new Insets(15));
-// //         Label tLbl = new Label(title);
-// //         tLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: white;");
-// //         Label sLbl = new Label(subtitle);
-// //         sLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #34d399;");
-// //         textData.getChildren().addAll(tLbl, sLbl);
+// //         // Create a clip to ensure the ImageView inherits the rounded corners
+// //         Rectangle clip = new Rectangle();
+// //         clip.widthProperty().bind(card.widthProperty());
+// //         clip.heightProperty().bind(card.heightProperty());
+// //         clip.setArcWidth(24); 
+// //         clip.setArcHeight(24);
+// //         imageView.setClip(clip);
 
-// //         card.getChildren().addAll(overlay, textData);
 // //         addHoverScale(card);
+
+// //         // Dark gradient overlay so text remains readable
+// //         Region overlay = new Region();
+// //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
+
+// //         VBox content = new VBox(5);
+// //         content.setAlignment(Pos.BOTTOM_LEFT);
+// //         content.setPadding(new Insets(15));
+        
+// //         Label t = new Label(title);
+// //         t.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+// //         Label s = new Label(sub);
+// //         s.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
+// //         Label tg = new Label(tag);
+// //         tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
+        
+// //         content.getChildren().addAll(t, s, tg);
+        
+// //         // Combine everything (ImageView must be behind the overlay and text)
+// //         card.getChildren().addAll(imageView, overlay, content);
 // //         return card;
 // //     }
 
@@ -3720,799 +2530,6 @@
 // //     }
 // // }
 
-package com.athlixcore.view.player.Training_Fitness;
-
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
-
-public class Traning_dashboard {
-
-    private BorderPane rootContainer;
-    private StackPane contentArea;
-    private Button trainingTabBtn;
-    private Button fitnessTabBtn;
-
-    public Node getView() {
-        if (rootContainer == null) {
-            rootContainer = new BorderPane();
-            rootContainer.setStyle("-fx-background-color: #f8fafc;");
-
-            // Create the fixed Top Bar (Search + Training/Fitness Toggle + Profile)
-            Node topBar = buildTopBar();
-            rootContainer.setTop(topBar);
-
-            // Create the dynamic Content Area for switching between Training & Fitness
-            contentArea = new StackPane();
-            rootContainer.setCenter(contentArea);
-
-            // Load Training by default
-            loadTrainingView();
-        }
-        return rootContainer;
-    }
-
-    // --- ANIMATION HELPERS ---
-    private void animateNodeEntrance(Node node, int delayMillis) {
-        node.setOpacity(0);
-        node.setTranslateY(25);
-
-        FadeTransition ft = new FadeTransition(Duration.millis(600), node);
-        ft.setToValue(1.0);
-
-        TranslateTransition tt = new TranslateTransition(Duration.millis(600), node);
-        tt.setToY(0);
-
-        ParallelTransition pt = new ParallelTransition(ft, tt);
-        pt.setDelay(Duration.millis(delayMillis));
-        pt.play();
-    }
-
-    private void addHoverScale(Node node) {
-        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
-        scaleIn.setToX(1.03); 
-        scaleIn.setToY(1.03);
-        
-        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
-        scaleOut.setToX(1.0); 
-        scaleOut.setToY(1.0);
-
-        node.setOnMouseEntered(e -> scaleIn.playFromStart());
-        node.setOnMouseExited(e -> scaleOut.playFromStart());
-    }
-
-    // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
-    private HBox buildTopBar() {
-        HBox topBar = new HBox(25);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setPadding(new Insets(20, 40, 10, 40));
-        topBar.setStyle("-fx-background-color: #f8fafc;");
-
-        // Search Bar
-        HBox searchBox = new HBox(10);
-        searchBox.setAlignment(Pos.CENTER_LEFT);
-        searchBox.setStyle("-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 10 20; -fx-border-color: #e2e8f0; -fx-border-radius: 25;");
-        
-        Label searchIcon = new Label("🔍");
-        searchIcon.setStyle("-fx-text-fill: #94a3b8;");
-        
-        TextField searchField = new TextField();
-        searchField.setPromptText("Search training modules, coaches, or stats...");
-        searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-pref-width: 320px; -fx-prompt-text-fill: #94a3b8; -fx-font-size: 14px;");
-        searchBox.getChildren().addAll(searchIcon, searchField);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        // --- TRAINING & FITNESS TOGGLE BUTTONS ---
-        HBox toggleContainer = new HBox(5);
-        toggleContainer.setAlignment(Pos.CENTER);
-        toggleContainer.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 4;");
-
-        trainingTabBtn = new Button("Training");
-        fitnessTabBtn = new Button("Fitness");
-
-        styleMainToggleButton(trainingTabBtn, true);
-        styleMainToggleButton(fitnessTabBtn, false);
-
-        trainingTabBtn.setOnAction(e -> {
-            styleMainToggleButton(trainingTabBtn, true);
-            styleMainToggleButton(fitnessTabBtn, false);
-            loadTrainingView();
-        });
-
-        fitnessTabBtn.setOnAction(e -> {
-            styleMainToggleButton(fitnessTabBtn, true);
-            styleMainToggleButton(trainingTabBtn, false);
-            loadFitnessView();
-        });
-
-        toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
-
-        // Avatar
-        Circle avatar = new Circle(20);
-        try { 
-            avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); 
-        } catch (Exception e) { 
-            avatar.setFill(Color.GRAY); 
-        }
-        addHoverScale(avatar);
-
-        HBox rightControls = new HBox(18);
-        rightControls.setAlignment(Pos.CENTER);
-        rightControls.getChildren().addAll(toggleContainer);
-
-        topBar.getChildren().addAll(spacer, rightControls);
-        return topBar;
-    }
-
-    private void styleMainToggleButton(Button btn, boolean isActive) {
-        if (isActive) {
-            btn.setStyle("-fx-background-color: white; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
-        } else {
-            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-cursor: hand;");
-        }
-    }
-
-    // --- VIEW LOADERS ---
-    private void loadTrainingView() {
-        VBox layout = new VBox(25);
-        layout.setPadding(new Insets(20, 40, 40, 40));
-
-        Node heroBanner = buildHeroBanner();
-        Node statsRow = buildStatsRow();
-        Node splitArea = buildMainSplitArea();
-
-        layout.getChildren().addAll(heroBanner, statsRow, splitArea);
-
-        // Animate elements sequentially
-        animateNodeEntrance(heroBanner, 50);
-        animateNodeEntrance(statsRow, 150);
-        animateNodeEntrance(splitArea, 250);
-
-        ScrollPane scrollPane = new ScrollPane(layout);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
-        scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
-
-        contentArea.getChildren().setAll(scrollPane);
-
-        // Smooth fade transition for the container replacement
-        contentArea.setOpacity(0);
-        FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
-        ft.setToValue(1.0);
-        ft.play();
-    }
-
-    // === MERGED: FITNESS VIEW LOADER LOGIC ===
-    private void loadFitnessView() {
-        // Instantiate the highly attractive Fitness UI class
-        Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
-        
-        // Add it directly into the container!
-        contentArea.getChildren().setAll(fitnessPage.getView());
-
-        // Smooth fade transition for the container replacement
-        contentArea.setOpacity(0);
-        FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
-        ft.setToValue(1.0);
-        ft.play();
-    }
-
-    // --- HERO BANNER ---
-    private StackPane buildHeroBanner() {
-        StackPane bannerPane = new StackPane();
-        bannerPane.setMinHeight(220);
-        bannerPane.setStyle("-fx-background-radius: 20; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 5);");
-
-        Region bg = new Region();
-        bg.setStyle("-fx-background-color: linear-gradient(to right, #1e293b, #0f172a); -fx-background-radius: 20;");
-        
-        HBox contentLayout = new HBox(30);
-        contentLayout.setAlignment(Pos.CENTER_LEFT);
-        contentLayout.setPadding(new Insets(30, 40, 30, 40));
-
-        StackPane avatarRing = new StackPane();
-        Circle outerRing = new Circle(65, Color.TRANSPARENT);
-        outerRing.setStroke(Color.web("#10b981"));
-        outerRing.setStrokeWidth(3);
-        Circle innerAvatar = new Circle(55);
-        try { innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg"))); } 
-        catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
-        avatarRing.getChildren().addAll(outerRing, innerAvatar);
-        addHoverScale(avatarRing);
-
-        VBox textLayout = new VBox(15);
-        textLayout.setAlignment(Pos.CENTER_LEFT);
-        
-        HBox nameRow = new HBox(15);
-        nameRow.setAlignment(Pos.CENTER_LEFT);
-        Label nameLbl = new Label("Vikram Malhotra");
-        nameLbl.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;");
-        Label levelBadge = new Label("Pro Level 8");
-        levelBadge.setStyle("-fx-background-color: rgba(16,185,129,0.2); -fx-text-fill: #34d399; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 20; -fx-border-color: #10b981; -fx-border-radius: 20;");
-        nameRow.getChildren().addAll(nameLbl, levelBadge);
-
-        Label quoteLbl = new Label("\"The harder you work in the nets, the easier it is on the pitch.\"");
-        quoteLbl.setStyle("-fx-font-size: 14px; -fx-font-style: italic; -fx-text-fill: #94a3b8;");
-
-        HBox actionsRow = new HBox(15);
-        actionsRow.setAlignment(Pos.CENTER_LEFT);
-
-        VBox aiScoreBox = new VBox(2);
-        aiScoreBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 10 20; -fx-background-radius: 10;");
-        Label aiTitle = new Label("AI Improvement Score");
-        aiTitle.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
-        Label aiValue = new Label("+12.4%");
-        aiValue.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold; -fx-font-size: 16px;");
-        aiScoreBox.getChildren().addAll(aiTitle, aiValue);
-
-        // === START TRAINING BUTTON WITH CLICK LOGIC PRESERVED ===
-        Button startBtn = new Button("Start\nTraining");
-        startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
-        addHoverScale(startBtn);
-        
-        startBtn.setOnAction(e -> {
-            // Instantiate the new page, and pass a callback to load back the Training view
-            Training_StartButton startPage = new Training_StartButton(() -> {
-                loadTrainingView();
-            });
-            
-            // Set the new UI into the center content area
-            contentArea.getChildren().setAll(startPage.getView());
-            
-            // Apply a smooth fade transition
-            contentArea.setOpacity(0);
-            FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
-            ft.setToValue(1.0);
-            ft.play();
-        });
-        
-        Button calBtn = new Button("Training\nCalendar");
-        calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
-        addHoverScale(calBtn);
-
-        Button bookBtn = new Button("Book\nCoach");
-        bookBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
-        addHoverScale(bookBtn);
-
-        actionsRow.getChildren().addAll(aiScoreBox, startBtn, calBtn, bookBtn);
-        textLayout.getChildren().addAll(nameRow, quoteLbl, actionsRow);
-        
-        contentLayout.getChildren().addAll(avatarRing, textLayout);
-        bannerPane.getChildren().addAll(bg, contentLayout);
-        
-        return bannerPane;
-    }
-
-    // --- STATS CARDS ---
-    private HBox buildStatsRow() {
-        HBox row = new HBox(20);
-        row.getChildren().addAll(
-            createCircularStatCard("Overall\nProgress", "82%", 0.82),
-            createIconStatCard("Sessions\nCompleted", "14", "📅"),
-            createIconStatCard("Practice Hours", "48h", "⏱"),
-            createIconStatCardWithGreen("AI Training\nScore", "94", "📊")
-        );
-        for (Node n : row.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
-        return row;
-    }
-
-    private HBox createCircularStatCard(String title, String value, double progress) {
-        HBox card = buildBaseCard();
-        VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
-        
-        StackPane circlePane = new StackPane();
-        Circle bgCircle = new Circle(22, Color.TRANSPARENT);
-        bgCircle.setStroke(Color.web("#f1f5f9"));
-        bgCircle.setStrokeWidth(4);
-        
-        Circle progCircle = new Circle(22, Color.TRANSPARENT);
-        progCircle.setStroke(Color.web("#10b981"));
-        progCircle.setStrokeWidth(4);
-        progCircle.getStrokeDashArray().addAll(progress * 138, 138.0);
-        
-        Label valLbl = new Label(value);
-        valLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;");
-        circlePane.getChildren().addAll(bgCircle, progCircle, valLbl);
-
-        Region spacer = new Region(); 
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        card.getChildren().addAll(texts, spacer, circlePane);
-        return card;
-    }
-
-    private HBox createIconStatCard(String title, String value, String icon) {
-        HBox card = buildBaseCard();
-        VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
-        Region spacer = new Region(); 
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label iconLbl = new Label(icon);
-        iconLbl.setStyle("-fx-font-size: 24px; -fx-text-fill: #94a3b8;");
-        card.getChildren().addAll(texts, spacer, iconLbl);
-        return card;
-    }
-
-    private HBox createIconStatCardWithGreen(String title, String value, String icon) {
-        HBox card = buildBaseCard();
-        VBox texts = new VBox(5, createStatTitle(title), createStatValue(value, "#10b981"));
-        Region spacer = new Region(); 
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        StackPane iconPane = new StackPane();
-        iconPane.setStyle("-fx-background-color: #d1fae5; -fx-background-radius: 8; -fx-padding: 8;");
-        Label iconLbl = new Label(icon);
-        iconLbl.setStyle("-fx-font-size: 20px; -fx-text-fill: #10b981;");
-        iconPane.getChildren().add(iconLbl);
-        
-        card.getChildren().addAll(texts, spacer, iconPane);
-        return card;
-    }
-
-    private HBox buildBaseCard() {
-        HBox card = new HBox();
-        card.setAlignment(Pos.CENTER_LEFT);
-        card.setPadding(new Insets(20));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);");
-        addHoverScale(card);
-        return card;
-    }
-    
-    private Label createStatTitle(String text) {
-        Label l = new Label(text);
-        l.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
-        return l;
-    }
-    
-    private Label createStatValue(String text) { return createStatValue(text, "#0f172a"); }
-    private Label createStatValue(String text, String color) {
-        Label l = new Label(text);
-        l.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
-        return l;
-    }
-
-    // --- MAIN SPLIT AREA ---
-    private HBox buildMainSplitArea() {
-        HBox splitLayout = new HBox(30);
-
-        VBox leftCol = new VBox(30);
-        HBox.setHgrow(leftCol, Priority.ALWAYS);
-        leftCol.getChildren().addAll(buildSkillTrainingSection(), buildAnalyticsSection()); // REPLACED GRID WITH TABS
-
-        VBox rightCol = new VBox(25);
-        rightCol.setPrefWidth(320);
-        rightCol.setMinWidth(320);
-        rightCol.getChildren().addAll(
-            buildScheduleSection(),
-            buildAIInsightsSection(),
-            buildWeatherEquipmentRow(),
-            buildMessagesSection()
-        );
-
-        splitLayout.getChildren().addAll(leftCol, rightCol);
-        return splitLayout;
-    }
-
-    // === MERGED: SKILL SPECIFIC TRAINING WITH IMAGES & INTERACTIVE TABS ===
-    private VBox buildSkillTrainingSection() {
-        VBox box = new VBox(15);
-        
-        HBox header = new HBox(20);
-        header.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label("Skill Specific Training");
-        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        
-        HBox tabs = new HBox(10);
-        
-        Label batTab = createMiniTab("Batting");
-        Label bowlTab = createMiniTab("Bowling");
-        Label fieldTab = createMiniTab("Fielding");
-        Label keepTab = createMiniTab("Keeper");
-        
-        tabs.getChildren().addAll(batTab, bowlTab, fieldTab, keepTab);
-        header.getChildren().addAll(title, tabs);
-
-        HBox cardsContainer = new HBox(15);
-        for(Node n : cardsContainer.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
-
-        // Load Default Tab
-        setTabActiveState(batTab, true);
-        setTabActiveState(bowlTab, false);
-        setTabActiveState(fieldTab, false);
-        setTabActiveState(keepTab, false);
-        loadSkillCards(cardsContainer, "Batting");
-
-        // Set Tab Actions
-        batTab.setOnMouseClicked(e -> {
-            setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
-            loadSkillCards(cardsContainer, "Batting");
-        });
-        bowlTab.setOnMouseClicked(e -> {
-            setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
-            loadSkillCards(cardsContainer, "Bowling");
-        });
-        fieldTab.setOnMouseClicked(e -> {
-            setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
-            loadSkillCards(cardsContainer, "Fielding");
-        });
-        keepTab.setOnMouseClicked(e -> {
-            setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
-            loadSkillCards(cardsContainer, "Keeper");
-        });
-
-        box.getChildren().addAll(header, cardsContainer);
-        return box;
-    }
-
-    private Label createMiniTab(String text) {
-        Label l = new Label(text);
-        l.setStyle("-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
-        return l;
-    }
-
-    private void setTabActiveState(Label tab, boolean isActive) {
-        if (isActive) {
-            tab.setStyle("-fx-background-color: white; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 2); -fx-cursor: hand;");
-        } else {
-            tab.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
-        }
-    }
-
-    private void loadSkillCards(HBox container, String category) {
-        container.getChildren().clear();
-        StackPane card1, card2;
-        
-        switch (category) {
-            case "Bowling":
-                card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=400&h=200&fit=crop");
-                card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "https://images.unsplash.com/photo-1518063319789-7217e6706b04?w=400&h=200&fit=crop");
-                break;
-            case "Fielding":
-                card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
-                card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", "https://images.unsplash.com/photo-1593786480164-9a3b68074d6c?w=400&h=200&fit=crop");
-                break;
-            case "Keeper":
-                card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
-                card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
-                break;
-            default: // Batting
-                card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1607734834519-d8576ae60ea6?w=400&h=200&fit=crop");
-                card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&h=200&fit=crop");
-                break;
-        }
-
-        HBox.setHgrow(card1, Priority.ALWAYS);
-        HBox.setHgrow(card2, Priority.ALWAYS);
-        container.getChildren().addAll(card1, card2);
-
-        container.setOpacity(0);
-        FadeTransition ft = new FadeTransition(Duration.millis(300), container);
-        ft.setToValue(1.0);
-        ft.play();
-    }
-
-    private StackPane createVideoCard(String title, String sub, String tag, String imageUrl) {
-        StackPane card = new StackPane();
-        card.setMinHeight(160);
-        
-        String style = "-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);";
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            style += "-fx-background-image: url('" + imageUrl + "'); -fx-background-size: cover; -fx-background-position: center center; -fx-background-radius: 12;";
-        }
-        card.setStyle(style);
-        addHoverScale(card);
-
-        Region overlay = new Region();
-        overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
-
-        VBox content = new VBox(5);
-        content.setAlignment(Pos.BOTTOM_LEFT);
-        content.setPadding(new Insets(15));
-        
-        Label t = new Label(title);
-        t.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
-        Label s = new Label(sub);
-        s.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
-        Label tg = new Label(tag);
-        tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
-        
-        content.getChildren().addAll(t, s, tg);
-        card.getChildren().addAll(overlay, content);
-        return card;
-    }
-
-    // --- ANALYTICS ---
-    private VBox buildAnalyticsSection() {
-        VBox box = new VBox(20);
-        box.setPadding(new Insets(25));
-        box.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);");
-        addHoverScale(box);
-
-        Label title = new Label("Skill Development Analytics");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-
-        HBox chartsRow = new HBox(30);
-        chartsRow.setAlignment(Pos.CENTER);
-
-        StackPane radarChart = buildRadarChartMock();
-        
-        VBox rightStats = new VBox(15);
-        rightStats.setAlignment(Pos.CENTER_LEFT);
-        
-        Label trendTitle = new Label("SKILL GROWTH TREND");
-        trendTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
-        Label trendVal = new Label("+18% this month");
-        trendVal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        VBox trendBox = new VBox(2, trendTitle, trendVal);
-
-        HBox barChart = new HBox(8);
-        barChart.setAlignment(Pos.BOTTOM_CENTER);
-        barChart.setMinHeight(80);
-        double[] heights = {30, 45, 20, 60, 50, 70, 90};
-        for (int i = 0; i < heights.length; i++) {
-            Rectangle bar = new Rectangle(18, heights[i]);
-            bar.setArcWidth(4); 
-            bar.setArcHeight(4);
-            bar.setFill(i < 3 ? Color.web("#e2e8f0") : Color.web("#10b981"));
-            barChart.getChildren().add(bar);
-        }
-
-        HBox summaryRow = new HBox(10);
-        summaryRow.getChildren().addAll(
-            createGrowthBox("Top Gaining", "Bowling\nAccuracy", "#10b981"),
-            createGrowthBox("Needs Focus", "Power\nHitting", "#ef4444")
-        );
-
-        rightStats.getChildren().addAll(trendBox, barChart, summaryRow);
-        chartsRow.getChildren().addAll(radarChart, rightStats);
-        box.getChildren().addAll(title, chartsRow);
-        return box;
-    }
-
-    private StackPane buildRadarChartMock() {
-        StackPane pane = new StackPane();
-        pane.setPrefSize(200, 200);
-        
-        pane.getChildren().add(createPentagon(90, "#f8fafc", "#cbd5e1"));
-        pane.getChildren().add(createPentagon(60, "transparent", "#e2e8f0"));
-        pane.getChildren().add(createPentagon(30, "transparent", "#e2e8f0"));
-
-        Polygon dataPoly = new Polygon();
-        dataPoly.getPoints().addAll(
-            0.0, -70.0,   // Technique
-            60.0, -10.0,  // Power
-            40.0, 60.0,   // Reflex
-            -30.0, 50.0,  // Stamina
-            -80.0, -20.0  // Accuracy
-        );
-        dataPoly.setFill(Color.web("rgba(16, 185, 129, 0.4)"));
-        dataPoly.setStroke(Color.web("#10b981"));
-        dataPoly.setStrokeWidth(2);
-        pane.getChildren().add(dataPoly);
-
-        pane.getChildren().addAll(
-            positionLabel("TECHNIQUE", 0, -105),
-            positionLabel("POWER", 95, -20),
-            positionLabel("REFLEX", 65, 90),
-            positionLabel("STAMINA", -65, 90),
-            positionLabel("ACCURACY", -95, -20)
-        );
-
-        return pane;
-    }
-
-    private Polygon createPentagon(double radius, String fillHex, String strokeHex) {
-        Polygon p = new Polygon();
-        for (int i = 0; i < 5; i++) {
-            double angle = Math.toRadians(-90 + i * 72);
-            p.getPoints().addAll(radius * Math.cos(angle), radius * Math.sin(angle));
-        }
-        p.setFill(Color.web(fillHex));
-        p.setStroke(Color.web(strokeHex));
-        return p;
-    }
-
-    private Label positionLabel(String text, double tx, double ty) {
-        Label l = new Label(text);
-        l.setStyle("-fx-font-size: 10px; -fx-text-fill: #475569;");
-        l.setTranslateX(tx);
-        l.setTranslateY(ty);
-        return l;
-    }
-
-    private VBox createGrowthBox(String title, String val, String valColor) {
-        VBox box = new VBox(5);
-        box.setPadding(new Insets(10, 15, 10, 15));
-        box.setStyle("-fx-background-color: #f8fafc; -background-radius: 8;");
-        Label t = new Label(title);
-        t.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
-        Label v = new Label(val);
-        v.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + valColor + ";");
-        box.getChildren().addAll(t, v);
-        return box;
-    }
-
-    // --- SCHEDULE & AI SECTION ---
-    private VBox buildScheduleSection() {
-        VBox section = new VBox(15);
-        HBox header = new HBox();
-        Label title = new Label("Today's Schedule");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
-        Region spacer = new Region(); 
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label calIcon = new Label("📅");
-        calIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 16px;");
-        header.getChildren().addAll(title, spacer, calIcon);
-
-        VBox list = new VBox(15);
-        list.getChildren().addAll(
-            createScheduleItem("16:00", "PM", "Fast Bowling Mastery", "Coach: Rahul Dravid • Lane 4", true),
-            createScheduleItem("18:30", "PM", "Recovery & Yoga", "Gym Zone B • Session 12", false)
-        );
-
-        section.getChildren().addAll(header, list);
-        return section;
-    }
-
-    private HBox createScheduleItem(String time, String ampm, String title, String subtitle, boolean isActive) {
-        HBox item = new HBox(15);
-        item.setAlignment(Pos.CENTER_LEFT);
-        item.setPadding(new Insets(15));
-        item.setStyle("-fx-background-color: " + (isActive ? "#f0fdf4" : "white") + "; -fx-background-radius: 12; -fx-border-color: " + (isActive ? "transparent" : "#f1f5f9") + "; -fx-border-radius: 12;");
-        if (isActive) item.setStyle(item.getStyle() + "-fx-border-width: 0 0 0 4; -fx-border-color: #10b981;");
-        addHoverScale(item);
-
-        VBox timeBox = new VBox(0);
-        timeBox.setAlignment(Pos.CENTER);
-        Label t = new Label(time);
-        t.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #0f172a;");
-        Label ap = new Label(ampm);
-        ap.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + (isActive ? "#10b981" : "#94a3b8") + ";");
-        timeBox.getChildren().addAll(t, ap);
-
-        VBox dataBox = new VBox(3);
-        Label titleLbl = new Label(title);
-        titleLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
-        Label subLbl = new Label(subtitle);
-        subLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-        dataBox.getChildren().addAll(titleLbl, subLbl);
-
-        item.getChildren().addAll(timeBox, dataBox);
-        return item;
-    }
-
-    private VBox buildAIInsightsSection() {
-        VBox card = new VBox(20);
-        card.setPadding(new Insets(25));
-        card.setStyle("-fx-background-color: #0f172a; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 8);");
-        addHoverScale(card);
-
-        HBox header = new HBox(10);
-        header.setAlignment(Pos.CENTER_LEFT);
-        Label icon = new Label("🧠");
-        Label title = new Label("AI Training Insights");
-        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;");
-        header.getChildren().addAll(icon, title);
-
-        Label quote = new Label("\"Aashish, your wrist position on the off-drive has shifted 3° inward. Today, focus on maintaining a high elbow finish to stabilize your shot direction.\"");
-        quote.setWrapText(true);
-        quote.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-style: italic; -fx-line-spacing: 5px;");
-
-        VBox plansBox = new VBox(10);
-        Label planTitle = new Label("ACTIVE PLANS");
-        planTitle.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
-        plansBox.getChildren().addAll(
-            planTitle,
-            createDarkPlanRow("Power Hitting Fundamentals", "75%", true),
-            createDarkPlanRow("Reverse Swing Mastery", "Coming Soon", false)
-        );
-
-        Button vrBtn = new Button("Launch VR Simulation");
-        vrBtn.setMaxWidth(Double.MAX_VALUE);
-        vrBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;");
-        addHoverScale(vrBtn);
-
-        card.getChildren().addAll(header, quote, plansBox, vrBtn);
-        return card;
-    }
-
-    private HBox createDarkPlanRow(String title, String val, boolean isGreenVal) {
-        HBox row = new HBox();
-        Label t = new Label(title);
-        t.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-        Region spacer = new Region(); 
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label v = new Label(val);
-        v.setStyle("-fx-font-size: 12px; -fx-text-fill: " + (isGreenVal ? "#34d399" : "#64748b") + ";");
-        row.getChildren().addAll(t, spacer, v);
-        return row;
-    }
-
-    private HBox buildWeatherEquipmentRow() {
-        HBox row = new HBox(15);
-        VBox weather = new VBox(5);
-        weather.setAlignment(Pos.CENTER);
-        weather.setPadding(new Insets(15));
-        weather.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
-        Label wIcon = new Label("☀"); 
-        wIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
-        Label wTemp = new Label("28°C Clear"); 
-        wTemp.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
-        Label wSub = new Label("Perfect for Nets"); 
-        wSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
-        weather.getChildren().addAll(wIcon, wTemp, wSub);
-        HBox.setHgrow(weather, Priority.ALWAYS);
-        addHoverScale(weather);
-
-        VBox equip = new VBox(5);
-        equip.setAlignment(Pos.CENTER);
-        equip.setPadding(new Insets(15));
-        equip.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
-        Label eIcon = new Label("🏏"); 
-        eIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
-        Label eTitle = new Label("Equipment"); 
-        eTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
-        Label eSub = new Label("2 items needed"); 
-        eSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
-        equip.getChildren().addAll(eIcon, eTitle, eSub);
-        HBox.setHgrow(equip, Priority.ALWAYS);
-        addHoverScale(equip);
-
-        row.getChildren().addAll(weather, equip);
-        return row;
-    }
-
-    private VBox buildMessagesSection() {
-        VBox section = new VBox(15);
-        Label title = new Label("COACH MESSAGES");
-        title.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-letter-spacing: 1px;");
-
-        VBox list = new VBox(15);
-        list.getChildren().addAll(
-            createMessageItem("RD", "Rahul Dravid", "Check your backlift video from yesterday's session.", "#10b981"),
-            createMessageItem("SM", "S. Malinga", "Great yorker consistency. Let's try slow-balls next.", "#6366f1")
-        );
-
-        section.getChildren().addAll(title, list);
-        return section;
-    }
-
-    private HBox createMessageItem(String initials, String name, String msg, String color) {
-        HBox item = new HBox(15);
-        Label initLbl = new Label(initials);
-        initLbl.setAlignment(Pos.CENTER);
-        initLbl.setMinSize(36, 36);
-        initLbl.setStyle("-fx-background-color: " + color + "33; -fx-text-fill: " + color + "; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 18;");
-
-        VBox texts = new VBox(3);
-        Label nameLbl = new Label(name);
-        nameLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        Label msgLbl = new Label(msg);
-        msgLbl.setWrapText(true);
-        msgLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-        texts.getChildren().addAll(nameLbl, msgLbl);
-
-        item.getChildren().addAll(initLbl, texts);
-        addHoverScale(item);
-        return item;
-    }
-}
-
 // package com.athlixcore.view.player.Training_Fitness;
 
 // import javafx.animation.FadeTransition;
@@ -4527,12 +2544,16 @@ public class Traning_dashboard {
 // import javafx.scene.control.ScrollPane;
 // import javafx.scene.control.TextField;
 // import javafx.scene.image.Image;
+// import javafx.scene.image.ImageView;
 // import javafx.scene.layout.*;
 // import javafx.scene.paint.Color;
 // import javafx.scene.shape.Circle;
 // import javafx.scene.shape.Polygon;
 // import javafx.scene.shape.Rectangle;
 // import javafx.util.Duration;
+
+// import java.io.File;
+// import java.io.InputStream;
 
 // public class Traning_dashboard {
 
@@ -4541,23 +2562,46 @@ public class Traning_dashboard {
 //     private Button trainingTabBtn;
 //     private Button fitnessTabBtn;
 
+//     // --- ANTI-SPAM FLAG ---
+//     private boolean isTransitioning = false;
+
 //     public Node getView() {
 //         if (rootContainer == null) {
 //             rootContainer = new BorderPane();
 //             rootContainer.setStyle("-fx-background-color: #f8fafc;");
 
-//             // Create the fixed Top Bar (Search + Training/Fitness Toggle + Profile)
 //             Node topBar = buildTopBar();
 //             rootContainer.setTop(topBar);
 
-//             // Create the dynamic Content Area for switching between Training & Fitness
 //             contentArea = new StackPane();
 //             rootContainer.setCenter(contentArea);
 
-//             // Load Training by default
 //             loadTrainingView();
 //         }
 //         return rootContainer;
+//     }
+
+//     // --- BULLETPROOF AVATAR LOADER ---
+//     private Image loadAvatarImage() {
+//         String imagePath = "/assests/images/Virat.jpg";
+//         try {
+//             // 1. Try Classpath stream first
+//             InputStream stream = getClass().getResourceAsStream(imagePath);
+//             if (stream != null) {
+//                 return new Image(stream);
+//             } else {
+//                 // 2. VS Code Fallback: Read directly from File System
+//                 File file = new File("src/main/resources" + imagePath);
+//                 if (file.exists()) {
+//                     return new Image(file.toURI().toString(), true);
+//                 } else {
+//                     System.out.println("Could not find avatar -> " + file.getAbsolutePath());
+//                 }
+//             }
+//         } catch (Exception e) {
+//             System.out.println("Exception loading avatar: " + imagePath);
+//         }
+//         return null; // Return null if not found, allowing fallback to Gray color
 //     }
 
 //     // --- ANIMATION HELPERS ---
@@ -4585,8 +2629,12 @@ public class Traning_dashboard {
 //         scaleOut.setToX(1.0); 
 //         scaleOut.setToY(1.0);
 
-//         node.setOnMouseEntered(e -> scaleIn.playFromStart());
-//         node.setOnMouseExited(e -> scaleOut.playFromStart());
+//         node.setOnMouseEntered(e -> {
+//             if (!isTransitioning) scaleIn.playFromStart();
+//         });
+//         node.setOnMouseExited(e -> {
+//             if (!isTransitioning) scaleOut.playFromStart();
+//         });
 //     }
 
 //     // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
@@ -4624,12 +2672,14 @@ public class Traning_dashboard {
 //         styleMainToggleButton(fitnessTabBtn, false);
 
 //         trainingTabBtn.setOnAction(e -> {
+//             if (isTransitioning) return;
 //             styleMainToggleButton(trainingTabBtn, true);
 //             styleMainToggleButton(fitnessTabBtn, false);
 //             loadTrainingView();
 //         });
 
 //         fitnessTabBtn.setOnAction(e -> {
+//             if (isTransitioning) return; 
 //             styleMainToggleButton(fitnessTabBtn, true);
 //             styleMainToggleButton(trainingTabBtn, false);
 //             loadFitnessView();
@@ -4637,21 +2687,21 @@ public class Traning_dashboard {
 
 //         toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
 
-//         // Avatar
+//         // Avatar (Top Bar)
 //         Circle avatar = new Circle(20);
-//         try { 
-//             // FIXED: Added 'true' to load the image in the background (prevents freezing)
-//             avatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg", true))); 
-//         } catch (Exception e) { 
-//             avatar.setFill(Color.GRAY); 
+//         Image avatarImg = loadAvatarImage();
+//         if (avatarImg != null) {
+//             avatar.setFill(new javafx.scene.paint.ImagePattern(avatarImg));
+//         } else {
+//             avatar.setFill(Color.GRAY);
 //         }
 //         addHoverScale(avatar);
 
 //         HBox rightControls = new HBox(18);
 //         rightControls.setAlignment(Pos.CENTER);
-//         rightControls.getChildren().addAll(toggleContainer);
+//         rightControls.getChildren().addAll(toggleContainer, avatar);
 
-//         topBar.getChildren().addAll(spacer, rightControls);
+//         topBar.getChildren().addAll(searchBox, spacer, rightControls);
 //         return topBar;
 //     }
 
@@ -4665,6 +2715,7 @@ public class Traning_dashboard {
 
 //     // --- VIEW LOADERS ---
 //     private void loadTrainingView() {
+//         isTransitioning = true;
 //         VBox layout = new VBox(25);
 //         layout.setPadding(new Insets(20, 40, 40, 40));
 
@@ -4674,7 +2725,6 @@ public class Traning_dashboard {
 
 //         layout.getChildren().addAll(heroBanner, statsRow, splitArea);
 
-//         // Animate elements sequentially
 //         animateNodeEntrance(heroBanner, 50);
 //         animateNodeEntrance(statsRow, 150);
 //         animateNodeEntrance(splitArea, 250);
@@ -4686,25 +2736,22 @@ public class Traning_dashboard {
 
 //         contentArea.getChildren().setAll(scrollPane);
 
-//         // Smooth fade transition for the container replacement
 //         contentArea.setOpacity(0);
 //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 //         ft.setToValue(1.0);
+//         ft.setOnFinished(e -> isTransitioning = false);
 //         ft.play();
 //     }
 
-//     // === FITNESS VIEW LOADER LOGIC ===
 //     private void loadFitnessView() {
-//         // Instantiate the highly attractive Fitness UI class
+//         isTransitioning = true;
 //         Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
-        
-//         // Add it directly into the container!
 //         contentArea.getChildren().setAll(fitnessPage.getView());
 
-//         // Smooth fade transition for the container replacement
 //         contentArea.setOpacity(0);
 //         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
 //         ft.setToValue(1.0);
+//         ft.setOnFinished(e -> isTransitioning = false);
 //         ft.play();
 //     }
 
@@ -4726,11 +2773,15 @@ public class Traning_dashboard {
 //         outerRing.setStroke(Color.web("#10b981"));
 //         outerRing.setStrokeWidth(3);
 //         Circle innerAvatar = new Circle(55);
-//         try { 
-//             // FIXED: Added 'true' to load the image in the background (prevents freezing)
-//             innerAvatar.setFill(new javafx.scene.paint.ImagePattern(new Image("https://randomuser.me/api/portraits/men/32.jpg", true))); 
-//         } 
-//         catch (Exception e) { innerAvatar.setFill(Color.DARKGRAY); }
+        
+//         // Avatar (Hero Banner)
+//         Image heroAvatarImg = loadAvatarImage();
+//         if (heroAvatarImg != null) {
+//             innerAvatar.setFill(new javafx.scene.paint.ImagePattern(heroAvatarImg));
+//         } else {
+//             innerAvatar.setFill(Color.DARKGRAY);
+//         }
+        
 //         avatarRing.getChildren().addAll(outerRing, innerAvatar);
 //         addHoverScale(avatarRing);
 
@@ -4759,24 +2810,22 @@ public class Traning_dashboard {
 //         aiValue.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold; -fx-font-size: 16px;");
 //         aiScoreBox.getChildren().addAll(aiTitle, aiValue);
 
-//         // === START TRAINING BUTTON WITH CLICK LOGIC PRESERVED ===
 //         Button startBtn = new Button("Start\nTraining");
 //         startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
 //         addHoverScale(startBtn);
         
 //         startBtn.setOnAction(e -> {
-//             // Instantiate the new page, and pass a callback to load back the Training view
+//             if (isTransitioning) return;
+//             isTransitioning = true;
+            
 //             Training_StartButton startPage = new Training_StartButton(() -> {
 //                 loadTrainingView();
 //             });
-            
-//             // Set the new UI into the center content area
 //             contentArea.getChildren().setAll(startPage.getView());
-            
-//             // Apply a smooth fade transition
 //             contentArea.setOpacity(0);
 //             FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
 //             ft.setToValue(1.0);
+//             ft.setOnFinished(evt -> isTransitioning = false);
 //             ft.play();
 //         });
         
@@ -4934,20 +2983,24 @@ public class Traning_dashboard {
 //         setTabActiveState(keepTab, false);
 //         loadSkillCards(cardsContainer, "Batting");
 
-//         // Set Tab Actions
+//         // Set Tab Actions (with debounce logic)
 //         batTab.setOnMouseClicked(e -> {
+//             if (isTransitioning) return;
 //             setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
 //             loadSkillCards(cardsContainer, "Batting");
 //         });
 //         bowlTab.setOnMouseClicked(e -> {
+//             if (isTransitioning) return;
 //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
 //             loadSkillCards(cardsContainer, "Bowling");
 //         });
 //         fieldTab.setOnMouseClicked(e -> {
+//             if (isTransitioning) return;
 //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
 //             loadSkillCards(cardsContainer, "Fielding");
 //         });
 //         keepTab.setOnMouseClicked(e -> {
+//             if (isTransitioning) return;
 //             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
 //             loadSkillCards(cardsContainer, "Keeper");
 //         });
@@ -4971,13 +3024,14 @@ public class Traning_dashboard {
 //     }
 
 //     private void loadSkillCards(HBox container, String category) {
+//         isTransitioning = true; // Lock clicks until transition finishes
 //         container.getChildren().clear();
 //         StackPane card1, card2;
         
 //         switch (category) {
 //             case "Bowling":
-//                 card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=400&h=200&fit=crop");
-//                 card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "https://images.unsplash.com/photo-1518063319789-7217e6706b04?w=400&h=200&fit=crop");
+//                 card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "/assests/images/ground1.png");
+//                 card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "/assests/images/ground2.png");
 //                 break;
 //             case "Fielding":
 //                 card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
@@ -4987,9 +3041,10 @@ public class Traning_dashboard {
 //                 card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
 //                 card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
 //                 break;
-//             default: // Batting
-//                 card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1607734834519-d8576ae60ea6?w=400&h=200&fit=crop");
-//                 card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&h=200&fit=crop");
+//             case "Batting":
+//             default:
+//                 card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "/assests/images/stadium.jpg"); 
+//                 card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "/assests/images/ground1.png"); 
 //                 break;
 //         }
 
@@ -5000,20 +3055,60 @@ public class Traning_dashboard {
 //         container.setOpacity(0);
 //         FadeTransition ft = new FadeTransition(Duration.millis(300), container);
 //         ft.setToValue(1.0);
+//         ft.setOnFinished(e -> isTransitioning = false); // Release lock
 //         ft.play();
 //     }
 
-//     private StackPane createVideoCard(String title, String sub, String tag, String imageUrl) {
+//     // === BULLETPROOF IMAGEVIEW LOADER ===
+//     private StackPane createVideoCard(String title, String sub, String tag, String imagePath) {
 //         StackPane card = new StackPane();
 //         card.setMinHeight(160);
+//         card.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
+
+//         ImageView imageView = new ImageView();
         
-//         String style = "-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);";
-//         if (imageUrl != null && !imageUrl.isEmpty()) {
-//             style += "-fx-background-image: url('" + imageUrl + "'); -fx-background-size: cover; -fx-background-position: center center; -fx-background-radius: 12;";
+//         if (imagePath != null && !imagePath.isEmpty()) {
+//             try {
+//                 Image img = null;
+//                 if (imagePath.startsWith("http")) {
+//                     img = new Image(imagePath, true);
+//                 } else {
+//                     InputStream stream = getClass().getResourceAsStream(imagePath);
+//                     if (stream != null) {
+//                         img = new Image(stream);
+//                     } else {
+//                         String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+//                         File file = new File("src/main/resources/" + cleanPath);
+//                         if (file.exists()) {
+//                             img = new Image(file.toURI().toString(), true);
+//                         } else {
+//                             System.out.println("Could not find image -> " + file.getAbsolutePath());
+//                         }
+//                     }
+//                 }
+                
+//                 if (img != null) {
+//                     imageView.setImage(img);
+//                 }
+//             } catch (Exception e) {
+//                 System.out.println("Exception loading photo: " + imagePath);
+//             }
 //         }
-//         card.setStyle(style);
+        
+//         imageView.fitWidthProperty().bind(card.widthProperty());
+//         imageView.fitHeightProperty().bind(card.heightProperty());
+//         imageView.setPreserveRatio(false); 
+
+//         Rectangle clip = new Rectangle();
+//         clip.widthProperty().bind(card.widthProperty());
+//         clip.heightProperty().bind(card.heightProperty());
+//         clip.setArcWidth(24); 
+//         clip.setArcHeight(24);
+//         imageView.setClip(clip);
+
 //         addHoverScale(card);
 
+//         // Dark gradient overlay so text remains readable
 //         Region overlay = new Region();
 //         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
 
@@ -5029,7 +3124,7 @@ public class Traning_dashboard {
 //         tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
         
 //         content.getChildren().addAll(t, s, tg);
-//         card.getChildren().addAll(overlay, content);
+//         card.getChildren().addAll(imageView, overlay, content);
 //         return card;
 //     }
 
@@ -5309,3 +3404,877 @@ public class Traning_dashboard {
 //         return item;
 //     }
 // }
+
+
+package com.athlixcore.view.player.Training_Fitness;
+
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
+
+import java.io.File;
+import java.io.InputStream;
+
+public class Traning_dashboard {
+
+    private BorderPane rootContainer;
+    private StackPane contentArea;
+    private Button trainingTabBtn;
+    private Button fitnessTabBtn;
+
+    // --- ANTI-SPAM FLAG ---
+    private boolean isTransitioning = false;
+
+    public Node getView() {
+        if (rootContainer == null) {
+            rootContainer = new BorderPane();
+            rootContainer.setStyle("-fx-background-color: #f8fafc;");
+
+            Node topBar = buildTopBar();
+            rootContainer.setTop(topBar);
+
+            contentArea = new StackPane();
+            rootContainer.setCenter(contentArea);
+
+            loadTrainingView();
+        }
+        return rootContainer;
+    }
+
+    // --- SYNCHRONOUS AVATAR LOADER (Fixes "Image not yet loaded" error) ---
+    private Image loadAvatarImage() {
+        String imagePath = "/assests/images/Virat.jpg";
+        try {
+            // Try Classpath stream first
+            InputStream stream = getClass().getResourceAsStream(imagePath);
+            if (stream != null) {
+                return new Image(stream); // Synchronous load
+            } else {
+                // VS Code Fallback: Read directly from File System
+                File file = new File("src/main/resources" + imagePath);
+                if (file.exists()) {
+                    return new Image(file.toURI().toString()); // Synchronous load
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Exception loading avatar: " + imagePath);
+        }
+        return null; 
+    }
+
+    // --- ANIMATION HELPERS ---
+    private void animateNodeEntrance(Node node, int delayMillis) {
+        node.setOpacity(0);
+        node.setTranslateY(25);
+
+        FadeTransition ft = new FadeTransition(Duration.millis(600), node);
+        ft.setToValue(1.0);
+
+        TranslateTransition tt = new TranslateTransition(Duration.millis(600), node);
+        tt.setToY(0);
+
+        ParallelTransition pt = new ParallelTransition(ft, tt);
+        pt.setDelay(Duration.millis(delayMillis));
+        pt.play();
+    }
+
+    private void addHoverScale(Node node) {
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
+        scaleIn.setToX(1.03); 
+        scaleIn.setToY(1.03);
+        
+        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
+        scaleOut.setToX(1.0); 
+        scaleOut.setToY(1.0);
+
+        node.setOnMouseEntered(e -> {
+            if (!isTransitioning) scaleIn.playFromStart();
+        });
+        node.setOnMouseExited(e -> {
+            if (!isTransitioning) scaleOut.playFromStart();
+        });
+    }
+
+    // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
+    private HBox buildTopBar() {
+        HBox topBar = new HBox(25);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setPadding(new Insets(20, 40, 10, 40));
+        topBar.setStyle("-fx-background-color: #f8fafc;");
+
+        // Search Bar
+        HBox searchBox = new HBox(10);
+        searchBox.setAlignment(Pos.CENTER_LEFT);
+        searchBox.setStyle("-fx-background-color: white; -fx-background-radius: 25; -fx-padding: 10 20; -fx-border-color: #e2e8f0; -fx-border-radius: 25;");
+        
+        Label searchIcon = new Label("🔍");
+        searchIcon.setStyle("-fx-text-fill: #94a3b8;");
+        
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search training modules, coaches, or stats...");
+        searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-pref-width: 320px; -fx-prompt-text-fill: #94a3b8; -fx-font-size: 14px;");
+        searchBox.getChildren().addAll(searchIcon, searchField);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // --- TRAINING & FITNESS TOGGLE BUTTONS ---
+        HBox toggleContainer = new HBox(5);
+        toggleContainer.setAlignment(Pos.CENTER);
+        toggleContainer.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 4;");
+
+        trainingTabBtn = new Button("Training");
+        fitnessTabBtn = new Button("Fitness");
+
+        styleMainToggleButton(trainingTabBtn, true);
+        styleMainToggleButton(fitnessTabBtn, false);
+
+        trainingTabBtn.setOnAction(e -> {
+            if (isTransitioning) return;
+            styleMainToggleButton(trainingTabBtn, true);
+            styleMainToggleButton(fitnessTabBtn, false);
+            loadTrainingView();
+        });
+
+        fitnessTabBtn.setOnAction(e -> {
+            if (isTransitioning) return; 
+            styleMainToggleButton(fitnessTabBtn, true);
+            styleMainToggleButton(trainingTabBtn, false);
+            loadFitnessView();
+        });
+
+        toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
+
+        // Avatar (Top Bar)
+        Circle avatar = new Circle(20);
+        Image avatarImg = loadAvatarImage();
+        if (avatarImg != null) {
+            avatar.setFill(new javafx.scene.paint.ImagePattern(avatarImg));
+        } else {
+            avatar.setFill(Color.GRAY);
+        }
+        addHoverScale(avatar);
+
+        HBox rightControls = new HBox(18);
+        rightControls.setAlignment(Pos.CENTER);
+        rightControls.getChildren().addAll(toggleContainer, avatar);
+
+        topBar.getChildren().addAll(searchBox, spacer, rightControls);
+        return topBar;
+    }
+
+    private void styleMainToggleButton(Button btn, boolean isActive) {
+        if (isActive) {
+            btn.setStyle("-fx-background-color: white; -fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
+        } else {
+            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 20; -fx-cursor: hand;");
+        }
+    }
+
+    // --- VIEW LOADERS ---
+    private void loadTrainingView() {
+        isTransitioning = true;
+        VBox layout = new VBox(25);
+        layout.setPadding(new Insets(20, 40, 40, 40));
+
+        Node heroBanner = buildHeroBanner();
+        Node statsRow = buildStatsRow();
+        Node splitArea = buildMainSplitArea();
+
+        layout.getChildren().addAll(heroBanner, statsRow, splitArea);
+
+        animateNodeEntrance(heroBanner, 50);
+        animateNodeEntrance(statsRow, 150);
+        animateNodeEntrance(splitArea, 250);
+
+        ScrollPane scrollPane = new ScrollPane(layout);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: #f8fafc;");
+        scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
+
+        contentArea.getChildren().setAll(scrollPane);
+
+        contentArea.setOpacity(0);
+        FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
+        ft.setToValue(1.0);
+        ft.setOnFinished(e -> isTransitioning = false);
+        ft.play();
+    }
+
+    private void loadFitnessView() {
+        isTransitioning = true;
+        Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
+        contentArea.getChildren().setAll(fitnessPage.getView());
+
+        contentArea.setOpacity(0);
+        FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
+        ft.setToValue(1.0);
+        ft.setOnFinished(e -> isTransitioning = false);
+        ft.play();
+    }
+
+    // --- HERO BANNER ---
+    private StackPane buildHeroBanner() {
+        StackPane bannerPane = new StackPane();
+        bannerPane.setMinHeight(220);
+        bannerPane.setStyle("-fx-background-radius: 20; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 5);");
+
+        Region bg = new Region();
+        bg.setStyle("-fx-background-color: linear-gradient(to right, #1e293b, #0f172a); -fx-background-radius: 20;");
+        
+        HBox contentLayout = new HBox(30);
+        contentLayout.setAlignment(Pos.CENTER_LEFT);
+        contentLayout.setPadding(new Insets(30, 40, 30, 40));
+
+        StackPane avatarRing = new StackPane();
+        Circle outerRing = new Circle(65, Color.TRANSPARENT);
+        outerRing.setStroke(Color.web("#10b981"));
+        outerRing.setStrokeWidth(3);
+        Circle innerAvatar = new Circle(55);
+        
+        // Avatar (Hero Banner)
+        Image heroAvatarImg = loadAvatarImage();
+        if (heroAvatarImg != null) {
+            innerAvatar.setFill(new javafx.scene.paint.ImagePattern(heroAvatarImg));
+        } else {
+            innerAvatar.setFill(Color.DARKGRAY);
+        }
+        
+        avatarRing.getChildren().addAll(outerRing, innerAvatar);
+        addHoverScale(avatarRing);
+
+        VBox textLayout = new VBox(15);
+        textLayout.setAlignment(Pos.CENTER_LEFT);
+        
+        HBox nameRow = new HBox(15);
+        nameRow.setAlignment(Pos.CENTER_LEFT);
+        Label nameLbl = new Label("Vikram Malhotra");
+        nameLbl.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;");
+        Label levelBadge = new Label("Pro Level 8");
+        levelBadge.setStyle("-fx-background-color: rgba(16,185,129,0.2); -fx-text-fill: #34d399; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 20; -fx-border-color: #10b981; -fx-border-radius: 20;");
+        nameRow.getChildren().addAll(nameLbl, levelBadge);
+
+        Label quoteLbl = new Label("\"The harder you work in the nets, the easier it is on the pitch.\"");
+        quoteLbl.setStyle("-fx-font-size: 14px; -fx-font-style: italic; -fx-text-fill: #94a3b8;");
+
+        HBox actionsRow = new HBox(15);
+        actionsRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox aiScoreBox = new VBox(2);
+        aiScoreBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 10 20; -fx-background-radius: 10;");
+        Label aiTitle = new Label("AI Improvement Score");
+        aiTitle.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
+        Label aiValue = new Label("+12.4%");
+        aiValue.setStyle("-fx-text-fill: #34d399; -fx-font-weight: bold; -fx-font-size: 16px;");
+        aiScoreBox.getChildren().addAll(aiTitle, aiValue);
+
+        Button startBtn = new Button("Start\nTraining");
+        startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 25; -fx-text-alignment: center; -fx-cursor: hand;");
+        addHoverScale(startBtn);
+        
+        startBtn.setOnAction(e -> {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            
+            Training_StartButton startPage = new Training_StartButton(() -> {
+                loadTrainingView();
+            });
+            contentArea.getChildren().setAll(startPage.getView());
+            contentArea.setOpacity(0);
+            FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
+            ft.setToValue(1.0);
+            ft.setOnFinished(evt -> isTransitioning = false);
+            ft.play();
+        });
+        
+        Button calBtn = new Button("Training\nCalendar");
+        calBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
+        addHoverScale(calBtn);
+
+        Button bookBtn = new Button("Book\nCoach");
+        bookBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 20; -fx-text-alignment: center; -fx-cursor: hand;");
+        addHoverScale(bookBtn);
+
+        actionsRow.getChildren().addAll(aiScoreBox, startBtn, calBtn, bookBtn);
+        textLayout.getChildren().addAll(nameRow, quoteLbl, actionsRow);
+        
+        contentLayout.getChildren().addAll(avatarRing, textLayout);
+        bannerPane.getChildren().addAll(bg, contentLayout);
+        
+        return bannerPane;
+    }
+
+    // --- STATS CARDS ---
+    private HBox buildStatsRow() {
+        HBox row = new HBox(20);
+        row.getChildren().addAll(
+            createCircularStatCard("Overall\nProgress", "82%", 0.82),
+            createIconStatCard("Sessions\nCompleted", "14", "📅"),
+            createIconStatCard("Practice Hours", "48h", "⏱"),
+            createIconStatCardWithGreen("AI Training\nScore", "94", "📊")
+        );
+        for (Node n : row.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
+        return row;
+    }
+
+    private HBox createCircularStatCard(String title, String value, double progress) {
+        HBox card = buildBaseCard();
+        VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
+        
+        StackPane circlePane = new StackPane();
+        Circle bgCircle = new Circle(22, Color.TRANSPARENT);
+        bgCircle.setStroke(Color.web("#f1f5f9"));
+        bgCircle.setStrokeWidth(4);
+        
+        Circle progCircle = new Circle(22, Color.TRANSPARENT);
+        progCircle.setStroke(Color.web("#10b981"));
+        progCircle.setStrokeWidth(4);
+        progCircle.getStrokeDashArray().addAll(progress * 138, 138.0);
+        
+        Label valLbl = new Label(value);
+        valLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;");
+        circlePane.getChildren().addAll(bgCircle, progCircle, valLbl);
+
+        Region spacer = new Region(); 
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        card.getChildren().addAll(texts, spacer, circlePane);
+        return card;
+    }
+
+    private HBox createIconStatCard(String title, String value, String icon) {
+        HBox card = buildBaseCard();
+        VBox texts = new VBox(5, createStatTitle(title), createStatValue(value));
+        Region spacer = new Region(); 
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label iconLbl = new Label(icon);
+        iconLbl.setStyle("-fx-font-size: 24px; -fx-text-fill: #94a3b8;");
+        card.getChildren().addAll(texts, spacer, iconLbl);
+        return card;
+    }
+
+    private HBox createIconStatCardWithGreen(String title, String value, String icon) {
+        HBox card = buildBaseCard();
+        VBox texts = new VBox(5, createStatTitle(title), createStatValue(value, "#10b981"));
+        Region spacer = new Region(); 
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        StackPane iconPane = new StackPane();
+        iconPane.setStyle("-fx-background-color: #d1fae5; -fx-background-radius: 8; -fx-padding: 8;");
+        Label iconLbl = new Label(icon);
+        iconLbl.setStyle("-fx-font-size: 20px; -fx-text-fill: #10b981;");
+        iconPane.getChildren().add(iconLbl);
+        
+        card.getChildren().addAll(texts, spacer, iconPane);
+        return card;
+    }
+
+    private HBox buildBaseCard() {
+        HBox card = new HBox();
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPadding(new Insets(20));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);");
+        addHoverScale(card);
+        return card;
+    }
+    
+    private Label createStatTitle(String text) {
+        Label l = new Label(text);
+        l.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
+        return l;
+    }
+    
+    private Label createStatValue(String text) { return createStatValue(text, "#0f172a"); }
+    private Label createStatValue(String text, String color) {
+        Label l = new Label(text);
+        l.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+        return l;
+    }
+
+    // --- MAIN SPLIT AREA ---
+    private HBox buildMainSplitArea() {
+        HBox splitLayout = new HBox(30);
+
+        VBox leftCol = new VBox(30);
+        HBox.setHgrow(leftCol, Priority.ALWAYS);
+        leftCol.getChildren().addAll(buildSkillTrainingSection(), buildAnalyticsSection());
+
+        VBox rightCol = new VBox(25);
+        rightCol.setPrefWidth(320);
+        rightCol.setMinWidth(320);
+        rightCol.getChildren().addAll(
+            buildScheduleSection(),
+            buildAIInsightsSection(),
+            buildWeatherEquipmentRow(),
+            buildMessagesSection()
+        );
+
+        splitLayout.getChildren().addAll(leftCol, rightCol);
+        return splitLayout;
+    }
+
+    // === SKILL SPECIFIC TRAINING WITH IMAGES & INTERACTIVE TABS ===
+    private VBox buildSkillTrainingSection() {
+        VBox box = new VBox(15);
+        
+        HBox header = new HBox(20);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label title = new Label("Skill Specific Training");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        
+        HBox tabs = new HBox(10);
+        
+        Label batTab = createMiniTab("Batting");
+        Label bowlTab = createMiniTab("Bowling");
+        Label fieldTab = createMiniTab("Fielding");
+        Label keepTab = createMiniTab("Keeper");
+        
+        tabs.getChildren().addAll(batTab, bowlTab, fieldTab, keepTab);
+        header.getChildren().addAll(title, tabs);
+
+        HBox cardsContainer = new HBox(15);
+        for(Node n : cardsContainer.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
+
+        // Load Default Tab (Batting)
+        setTabActiveState(batTab, true);
+        setTabActiveState(bowlTab, false);
+        setTabActiveState(fieldTab, false);
+        setTabActiveState(keepTab, false);
+        loadSkillCards(cardsContainer, "Batting");
+
+        // Set Tab Actions
+        batTab.setOnMouseClicked(e -> {
+            if (isTransitioning) return;
+            setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+            loadSkillCards(cardsContainer, "Batting");
+        });
+        bowlTab.setOnMouseClicked(e -> {
+            if (isTransitioning) return;
+            setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
+            loadSkillCards(cardsContainer, "Bowling");
+        });
+        fieldTab.setOnMouseClicked(e -> {
+            if (isTransitioning) return;
+            setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
+            loadSkillCards(cardsContainer, "Fielding");
+        });
+        keepTab.setOnMouseClicked(e -> {
+            if (isTransitioning) return;
+            setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
+            loadSkillCards(cardsContainer, "Keeper");
+        });
+
+        box.getChildren().addAll(header, cardsContainer);
+        return box;
+    }
+
+    private Label createMiniTab(String text) {
+        Label l = new Label(text);
+        l.setStyle("-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+        return l;
+    }
+
+    private void setTabActiveState(Label tab, boolean isActive) {
+        if (isActive) {
+            tab.setStyle("-fx-background-color: white; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 2); -fx-cursor: hand;");
+        } else {
+            tab.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 6 16; -fx-background-radius: 12; -fx-cursor: hand;");
+        }
+    }
+
+    private void loadSkillCards(HBox container, String category) {
+        isTransitioning = true; // Lock clicks until transition finishes
+        container.getChildren().clear();
+        StackPane card1, card2;
+        
+        switch (category) {
+            case "Bowling":
+                card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "/assests/images/ground1.png");
+                card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "/assests/images/ground2.png");
+                break;
+            case "Fielding":
+                card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
+                card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", "https://images.unsplash.com/photo-1593786480164-9a3b68074d6c?w=400&h=200&fit=crop");
+                break;
+            case "Keeper":
+                card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
+                card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
+                break;
+            case "Batting":
+            default:
+                card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "/assests/images/stadium.jpg"); 
+                card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "/assests/images/ground1.png"); 
+                break;
+        }
+
+        HBox.setHgrow(card1, Priority.ALWAYS);
+        HBox.setHgrow(card2, Priority.ALWAYS);
+        container.getChildren().addAll(card1, card2);
+
+        container.setOpacity(0);
+        FadeTransition ft = new FadeTransition(Duration.millis(300), container);
+        ft.setToValue(1.0);
+        ft.setOnFinished(e -> isTransitioning = false); // Release lock
+        ft.play();
+    }
+
+    // === BULLETPROOF IMAGEVIEW LOADER ===
+    private StackPane createVideoCard(String title, String sub, String tag, String imagePath) {
+        StackPane card = new StackPane();
+        card.setMinHeight(160);
+        card.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
+
+        ImageView imageView = new ImageView();
+        
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                Image img = null;
+                if (imagePath.startsWith("http")) {
+                    img = new Image(imagePath, true);
+                } else {
+                    InputStream stream = getClass().getResourceAsStream(imagePath);
+                    if (stream != null) {
+                        img = new Image(stream);
+                    } else {
+                        String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+                        File file = new File("src/main/resources/" + cleanPath);
+                        if (file.exists()) {
+                            img = new Image(file.toURI().toString());
+                        } else {
+                            System.out.println("Could not find image -> " + file.getAbsolutePath());
+                        }
+                    }
+                }
+                
+                if (img != null) {
+                    imageView.setImage(img);
+                }
+            } catch (Exception e) {
+                System.out.println("Exception loading photo: " + imagePath);
+            }
+        }
+        
+        imageView.fitWidthProperty().bind(card.widthProperty());
+        imageView.fitHeightProperty().bind(card.heightProperty());
+        imageView.setPreserveRatio(false); 
+
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(card.widthProperty());
+        clip.heightProperty().bind(card.heightProperty());
+        clip.setArcWidth(24); 
+        clip.setArcHeight(24);
+        imageView.setClip(clip);
+
+        addHoverScale(card);
+
+        // Dark gradient overlay so text remains readable
+        Region overlay = new Region();
+        overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
+
+        VBox content = new VBox(5);
+        content.setAlignment(Pos.BOTTOM_LEFT);
+        content.setPadding(new Insets(15));
+        
+        Label t = new Label(title);
+        t.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+        Label s = new Label(sub);
+        s.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 11px;");
+        Label tg = new Label(tag);
+        tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
+        
+        content.getChildren().addAll(t, s, tg);
+        card.getChildren().addAll(imageView, overlay, content);
+        return card;
+    }
+
+    // --- ANALYTICS ---
+    private VBox buildAnalyticsSection() {
+        VBox box = new VBox(20);
+        box.setPadding(new Insets(25));
+        box.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);");
+        addHoverScale(box);
+
+        Label title = new Label("Skill Development Analytics");
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
+
+        HBox chartsRow = new HBox(30);
+        chartsRow.setAlignment(Pos.CENTER);
+
+        StackPane radarChart = buildRadarChartMock();
+        
+        VBox rightStats = new VBox(15);
+        rightStats.setAlignment(Pos.CENTER_LEFT);
+        
+        Label trendTitle = new Label("SKILL GROWTH TREND");
+        trendTitle.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
+        Label trendVal = new Label("+18% this month");
+        trendVal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        VBox trendBox = new VBox(2, trendTitle, trendVal);
+
+        HBox barChart = new HBox(8);
+        barChart.setAlignment(Pos.BOTTOM_CENTER);
+        barChart.setMinHeight(80);
+        double[] heights = {30, 45, 20, 60, 50, 70, 90};
+        for (int i = 0; i < heights.length; i++) {
+            Rectangle bar = new Rectangle(18, heights[i]);
+            bar.setArcWidth(4); 
+            bar.setArcHeight(4);
+            bar.setFill(i < 3 ? Color.web("#e2e8f0") : Color.web("#10b981"));
+            barChart.getChildren().add(bar);
+        }
+
+        HBox summaryRow = new HBox(10);
+        summaryRow.getChildren().addAll(
+            createGrowthBox("Top Gaining", "Bowling\nAccuracy", "#10b981"),
+            createGrowthBox("Needs Focus", "Power\nHitting", "#ef4444")
+        );
+
+        rightStats.getChildren().addAll(trendBox, barChart, summaryRow);
+        chartsRow.getChildren().addAll(radarChart, rightStats);
+        box.getChildren().addAll(title, chartsRow);
+        return box;
+    }
+
+    private StackPane buildRadarChartMock() {
+        StackPane pane = new StackPane();
+        pane.setPrefSize(200, 200);
+        
+        pane.getChildren().add(createPentagon(90, "#f8fafc", "#cbd5e1"));
+        pane.getChildren().add(createPentagon(60, "transparent", "#e2e8f0"));
+        pane.getChildren().add(createPentagon(30, "transparent", "#e2e8f0"));
+
+        Polygon dataPoly = new Polygon();
+        dataPoly.getPoints().addAll(
+            0.0, -70.0,   // Technique
+            60.0, -10.0,  // Power
+            40.0, 60.0,   // Reflex
+            -30.0, 50.0,  // Stamina
+            -80.0, -20.0  // Accuracy
+        );
+        dataPoly.setFill(Color.web("rgba(16, 185, 129, 0.4)"));
+        dataPoly.setStroke(Color.web("#10b981"));
+        dataPoly.setStrokeWidth(2);
+        pane.getChildren().add(dataPoly);
+
+        pane.getChildren().addAll(
+            positionLabel("TECHNIQUE", 0, -105),
+            positionLabel("POWER", 95, -20),
+            positionLabel("REFLEX", 65, 90),
+            positionLabel("STAMINA", -65, 90),
+            positionLabel("ACCURACY", -95, -20)
+        );
+
+        return pane;
+    }
+
+    private Polygon createPentagon(double radius, String fillHex, String strokeHex) {
+        Polygon p = new Polygon();
+        for (int i = 0; i < 5; i++) {
+            double angle = Math.toRadians(-90 + i * 72);
+            p.getPoints().addAll(radius * Math.cos(angle), radius * Math.sin(angle));
+        }
+        p.setFill(Color.web(fillHex));
+        p.setStroke(Color.web(strokeHex));
+        return p;
+    }
+
+    private Label positionLabel(String text, double tx, double ty) {
+        Label l = new Label(text);
+        l.setStyle("-fx-font-size: 10px; -fx-text-fill: #475569;");
+        l.setTranslateX(tx);
+        l.setTranslateY(ty);
+        return l;
+    }
+
+    private VBox createGrowthBox(String title, String val, String valColor) {
+        VBox box = new VBox(5);
+        box.setPadding(new Insets(10, 15, 10, 15));
+        box.setStyle("-fx-background-color: #f8fafc; -background-radius: 8;");
+        Label t = new Label(title);
+        t.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
+        Label v = new Label(val);
+        v.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + valColor + ";");
+        box.getChildren().addAll(t, v);
+        return box;
+    }
+
+    // --- SCHEDULE & AI SECTION ---
+    private VBox buildScheduleSection() {
+        VBox section = new VBox(15);
+        HBox header = new HBox();
+        Label title = new Label("Today's Schedule");
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #334155;");
+        Region spacer = new Region(); 
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label calIcon = new Label("📅");
+        calIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 16px;");
+        header.getChildren().addAll(title, spacer, calIcon);
+
+        VBox list = new VBox(15);
+        list.getChildren().addAll(
+            createScheduleItem("16:00", "PM", "Fast Bowling Mastery", "Coach: Rahul Dravid • Lane 4", true),
+            createScheduleItem("18:30", "PM", "Recovery & Yoga", "Gym Zone B • Session 12", false)
+        );
+
+        section.getChildren().addAll(header, list);
+        return section;
+    }
+
+    private HBox createScheduleItem(String time, String ampm, String title, String subtitle, boolean isActive) {
+        HBox item = new HBox(15);
+        item.setAlignment(Pos.CENTER_LEFT);
+        item.setPadding(new Insets(15));
+        item.setStyle("-fx-background-color: " + (isActive ? "#f0fdf4" : "white") + "; -fx-background-radius: 12; -fx-border-color: " + (isActive ? "transparent" : "#f1f5f9") + "; -fx-border-radius: 12;");
+        if (isActive) item.setStyle(item.getStyle() + "-fx-border-width: 0 0 0 4; -fx-border-color: #10b981;");
+        addHoverScale(item);
+
+        VBox timeBox = new VBox(0);
+        timeBox.setAlignment(Pos.CENTER);
+        Label t = new Label(time);
+        t.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #0f172a;");
+        Label ap = new Label(ampm);
+        ap.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + (isActive ? "#10b981" : "#94a3b8") + ";");
+        timeBox.getChildren().addAll(t, ap);
+
+        VBox dataBox = new VBox(3);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
+        Label subLbl = new Label(subtitle);
+        subLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
+        dataBox.getChildren().addAll(titleLbl, subLbl);
+
+        item.getChildren().addAll(timeBox, dataBox);
+        return item;
+    }
+
+    private VBox buildAIInsightsSection() {
+        VBox card = new VBox(20);
+        card.setPadding(new Insets(25));
+        card.setStyle("-fx-background-color: #0f172a; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 8);");
+        addHoverScale(card);
+
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label icon = new Label("🧠");
+        Label title = new Label("AI Training Insights");
+        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;");
+        header.getChildren().addAll(icon, title);
+
+        Label quote = new Label("\"Aashish, your wrist position on the off-drive has shifted 3° inward. Today, focus on maintaining a high elbow finish to stabilize your shot direction.\"");
+        quote.setWrapText(true);
+        quote.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-style: italic; -fx-line-spacing: 5px;");
+
+        VBox plansBox = new VBox(10);
+        Label planTitle = new Label("ACTIVE PLANS");
+        planTitle.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
+        plansBox.getChildren().addAll(
+            planTitle,
+            createDarkPlanRow("Power Hitting Fundamentals", "75%", true),
+            createDarkPlanRow("Reverse Swing Mastery", "Coming Soon", false)
+        );
+
+        Button vrBtn = new Button("Launch VR Simulation");
+        vrBtn.setMaxWidth(Double.MAX_VALUE);
+        vrBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;");
+        addHoverScale(vrBtn);
+
+        card.getChildren().addAll(header, quote, plansBox, vrBtn);
+        return card;
+    }
+
+    private HBox createDarkPlanRow(String title, String val, boolean isGreenVal) {
+        HBox row = new HBox();
+        Label t = new Label(title);
+        t.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+        Region spacer = new Region(); 
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label v = new Label(val);
+        v.setStyle("-fx-font-size: 12px; -fx-text-fill: " + (isGreenVal ? "#34d399" : "#64748b") + ";");
+        row.getChildren().addAll(t, spacer, v);
+        return row;
+    }
+
+    private HBox buildWeatherEquipmentRow() {
+        HBox row = new HBox(15);
+        VBox weather = new VBox(5);
+        weather.setAlignment(Pos.CENTER);
+        weather.setPadding(new Insets(15));
+        weather.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
+        Label wIcon = new Label("☀"); 
+        wIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
+        Label wTemp = new Label("28°C Clear"); 
+        wTemp.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        Label wSub = new Label("Perfect for Nets"); 
+        wSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
+        weather.getChildren().addAll(wIcon, wTemp, wSub);
+        HBox.setHgrow(weather, Priority.ALWAYS);
+        addHoverScale(weather);
+
+        VBox equip = new VBox(5);
+        equip.setAlignment(Pos.CENTER);
+        equip.setPadding(new Insets(15));
+        equip.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #f1f5f9; -fx-border-radius: 12;");
+        Label eIcon = new Label("🏏"); 
+        eIcon.setStyle("-fx-text-fill: #10b981; -fx-font-size: 20px;");
+        Label eTitle = new Label("Equipment"); 
+        eTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        Label eSub = new Label("2 items needed"); 
+        eSub.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b;");
+        equip.getChildren().addAll(eIcon, eTitle, eSub);
+        HBox.setHgrow(equip, Priority.ALWAYS);
+        addHoverScale(equip);
+
+        row.getChildren().addAll(weather, equip);
+        return row;
+    }
+
+    private VBox buildMessagesSection() {
+        VBox section = new VBox(15);
+        Label title = new Label("COACH MESSAGES");
+        title.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-letter-spacing: 1px;");
+
+        VBox list = new VBox(15);
+        list.getChildren().addAll(
+            createMessageItem("RD", "Rahul Dravid", "Check your backlift video from yesterday's session.", "#10b981"),
+            createMessageItem("SM", "S. Malinga", "Great yorker consistency. Let's try slow-balls next.", "#6366f1")
+        );
+
+        section.getChildren().addAll(title, list);
+        return section;
+    }
+
+    private HBox createMessageItem(String initials, String name, String msg, String color) {
+        HBox item = new HBox(15);
+        Label initLbl = new Label(initials);
+        initLbl.setAlignment(Pos.CENTER);
+        initLbl.setMinSize(36, 36);
+        initLbl.setStyle("-fx-background-color: " + color + "33; -fx-text-fill: " + color + "; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 18;");
+
+        VBox texts = new VBox(3);
+        Label nameLbl = new Label(name);
+        nameLbl.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        Label msgLbl = new Label(msg);
+        msgLbl.setWrapText(true);
+        msgLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
+        texts.getChildren().addAll(nameLbl, msgLbl);
+
+        item.getChildren().addAll(initLbl, texts);
+        addHoverScale(item);
+        return item;
+    }
+}
