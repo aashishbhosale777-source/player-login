@@ -6,9 +6,11 @@ import com.athlixcore.view.player.Scorecard.ScorecardPage;
 import com.athlixcore.view.player.Tournament.Tournament_dashboard.TournamentPage;
 import com.athlixcore.view.player.Training_Fitness.Traning_dashboard;
 import com.athlixcore.view.player.Academy.Academy_Dashboard;
+import com.athlixcore.view.player.Dashboard.Player_Dashboard;
 import com.athlixcore.view.player.Leaderboard.Leaderboard_Page;
 import com.athlixcore.view.player.community.Community_Dashboard;
 
+import com.athlixcore.view.player.Training_Fitness.Traning_dashboard;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.application.Application;
@@ -169,28 +171,52 @@ public class PlayerHomePage extends Application {
             if (selectedItem == null) return;
 
             switch (selectedItem) {
-                case "Community" -> borderPane.setCenter(new Community_Dashboard(borderPane));
-                case "Profile" -> borderPane.setCenter(new Player_Profile(borderPane));
-                case "Academy" -> borderPane.setCenter(new Academy_Dashboard().getView());
-                case "Scorecard" -> borderPane.setCenter(new ScorecardPage().getView());
-                case "Tournament" -> borderPane.setCenter(new TournamentPage().getView()); 
-                case "Leaderboard" -> borderPane.setCenter(new Leaderboard_Page(borderPane));
-                
-                // >>> THIS IS THE FIX <<<
-                case "Traning / Fitness" -> {
-                    // This loads your highly attractive Training dashboard into the center!
-                    borderPane.setCenter(new Traning_dashboard().getView());
-                }
 
                 case "Dashboard" -> {
-                    VBox defaultBox = new VBox(20);
-                    defaultBox.setPadding(new Insets(40));
-                    defaultBox.setStyle("-fx-background-color: #fbf8f8;");
-                    contentTitle.setText("Dashboard Page");
-                    contentText.setText("Welcome to your dashboard overview.");
-                    defaultBox.getChildren().addAll(contentTitle, contentText);
-                    borderPane.setCenter(defaultBox);
-                    animateContent(contentTitle, contentText);
+                    borderPane.setCenter(new Player_Dashboard(borderPane));
+                }
+                case "Community" -> {
+                    // Load the brand new Community Dashboard into the center
+                    borderPane.setCenter(new Community_Dashboard(borderPane));
+                }
+                // case "Tournament" -> {
+                //     // Load the Tournament page into the center
+                //     borderPane.setCenter(new Tournament_Dashboard(borderPane));
+                // }
+                case "Profile" -> {
+                    // Load the Profile page into the center
+                    borderPane.setCenter(new Player_Profile(borderPane));
+                }
+                case "Academy" -> {
+                        // Loads the Academy dashboard into the center
+                        borderPane.setCenter(new Academy_Dashboard().getView());
+                    }
+                case "Scorecard" -> {
+                // Loads your main Scorecard page into the center
+                borderPane.setCenter(new ScorecardPage().getView());
+                }
+                case "Tournament" -> {
+                    // Loads your main Tournament dashboard into the center
+                    borderPane.setCenter(new TournamentPage().getView()); 
+                }
+                // case "Dashboard" -> {
+                //     // Default placeholder logic for Dashboard
+                //     VBox defaultBox = new VBox(20);
+                //     defaultBox.setPadding(new Insets(40));
+                //     defaultBox.setStyle("-fx-background-color: #fbf8f8;");
+                //     contentTitle.setText("Dashboard Page");
+                //     contentText.setText("Welcome to your dashboard overview.");
+                //     defaultBox.getChildren().addAll(contentTitle, contentText);
+                //     borderPane.setCenter(defaultBox);
+                //     animateContent(contentTitle, contentText);
+                // }
+                case "Leaderboard" -> {
+                    // This loads your new Leaderboard page into the center!
+                    borderPane.setCenter(new Leaderboard_Page(borderPane));
+                }
+                case "Traning / Fitness" -> {
+                    // Loads the Training and Fitness dashboard container into the center
+                    borderPane.setCenter(new Traning_dashboard().getView());
                 }
                 default -> {
                     VBox defaultBox = new VBox(20);

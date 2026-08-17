@@ -9,14 +9,8 @@ import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamen
 import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamentview;
 import com.athlixcore.view.player.Tournament.My_Tournament.MyTournamentPage;
 
-// import com.athlixcore.view.Tournament.Completed_Tournament.CompletedTournament;
-// import com.athlix.view.Tournament.Completed_Tournament.CompletedTournamentView;
-// import com.athlix.view.Tournament.Completed_Tournament.CompletedTournamentonviewTournament;
-// import com.athlix.view.Tournament.Current_Tournament.CurrentTournament;
-// import com.athlix.view.Tournament.Current_Tournament.CurrentTournamentLiveMatch;
-// import com.athlix.view.Tournament.Current_Tournament.CurrentTournamentLiveMatchview;
-// import com.athlix.view.Tournament.Current_Tournament.CurrentTournamentview;
-// import com.athlix.view.Tournament.My_Tournament.MyTournamentPage;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
@@ -191,7 +185,9 @@ public class TournamentPage {
         
         // 1. Current Tournament Page Instance
         final CurrentTournament[] currentTournamentPageHolder = new CurrentTournament[1];
-        currentTournamentPageHolder[0] = new CurrentTournament(
+        currentTournamentPageHolder[0] = new CurrentTournament();
+        setCurrentTournamentActions(
+            currentTournamentPageHolder[0],
             () -> {
                 tabUpcoming.setSelected(true);
                 rootContainer.getChildren().setAll(tournamentListScrollPane);
@@ -212,7 +208,7 @@ public class TournamentPage {
             () -> {
                 final CurrentTournamentview[] moreViewHolder = new CurrentTournamentview[1];
                 moreViewHolder[0] = new CurrentTournamentview(
-                    () -> rootContainer.getChildren().setAll(currentTournamentPageHolder[0].getView()), 
+                    () -> rootContainer.getChildren().setAll(currentTournamentPageHolder[0].getView()),
                     () -> {
                         final CurrentTournamentLiveMatch[] liveMatchPageHolder = new CurrentTournamentLiveMatch[1];
                         liveMatchPageHolder[0] = new CurrentTournamentLiveMatch(

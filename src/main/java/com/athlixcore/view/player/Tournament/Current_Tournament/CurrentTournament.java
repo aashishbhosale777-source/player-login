@@ -18,7 +18,7 @@ public class CurrentTournament {
     private Runnable onViewMoreAction;
 
     // The constructor must accept all 3 actions
-    public CurrentTournament(Runnable onBackAction, Runnable onViewCurrentTournamentAction, Runnable onViewMoreAction) {
+    public CurrentTournament() {
         this.onBackAction = onBackAction;
         this.onViewCurrentTournamentAction = onViewCurrentTournamentAction;
         this.onViewMoreAction = onViewMoreAction;

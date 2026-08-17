@@ -1,5 +1,3 @@
-
-
 package com.athlixcore.view.player.Academy;
 
 import javafx.animation.ScaleTransition;

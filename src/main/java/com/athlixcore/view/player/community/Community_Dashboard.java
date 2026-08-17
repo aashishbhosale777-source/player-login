@@ -1,12 +1,18 @@
+
+
+
+
 package com.athlixcore.view.player.community;
 
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
+import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -24,16 +30,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
-import java.util.Optional;
 
-public class Community_Dashboard extends VBox {
+public class Community_Dashboard extends StackPane {
 
     private BorderPane mainLayout;
     private VBox postList;
@@ -47,11 +50,9 @@ public class Community_Dashboard extends VBox {
     public Community_Dashboard(BorderPane mainLayout) {
         this.mainLayout = mainLayout;
 
-        setSpacing(0);
-        setPadding(new Insets(0));
-        setStyle("-fx-background-color: #f5f7fb;");
-
-        VBox page = new VBox(0);
+        // --- 1. BASE PAGE LAYOUT ---
+        VBox pageLayout = new VBox(0);
+        pageLayout.setStyle("-fx-background-color: #f5f7fb;");
 
         HBox topMenu = buildTopMenu();
 
@@ -64,17 +65,67 @@ public class Community_Dashboard extends VBox {
         VBox rightSidebar = buildRightSidebar();
 
         mainSplit.getChildren().addAll(feedColumn, rightSidebar);
-        page.getChildren().addAll(topMenu, mainSplit);
+        pageLayout.getChildren().addAll(topMenu, mainSplit);
 
-        ScrollPane pageScroll = new ScrollPane(page);
+        ScrollPane pageScroll = new ScrollPane(pageLayout);
         pageScroll.setFitToWidth(true);
         pageScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         pageScroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0;");
         pageScroll.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
 
-        VBox.setVgrow(pageScroll, Priority.ALWAYS);
-        getChildren().add(pageScroll);
+        this.getChildren().add(pageScroll);
+
+        // --- TRIGGER CASCADE ENTRY ANIMATIONS ---
+        applyCascadeAnimation(feedColumn, 0);
+        applyCascadeAnimation(rightSidebar, 200); // Delay sidebar slightly for a sweeping effect
+        applyCascadeAnimation(postList, 300);
     }
+
+    // =========================================================================
+    // ANIMATION ENGINE 
+    // =========================================================================
+    
+    // 1. Cascade Entry Animation (Fade + Slide Up)
+    private void applyCascadeAnimation(VBox container, int delayOffset) {
+        for (int i = 0; i < container.getChildren().size(); i++) {
+            Node node = container.getChildren().get(i);
+            
+            // Set initial state (invisible and slightly pushed down)
+            node.setOpacity(0);
+            node.setTranslateY(20);
+
+            // Fade in
+            FadeTransition ft = new FadeTransition(Duration.millis(400), node);
+            ft.setToValue(1);
+            ft.setDelay(Duration.millis((i * 80) + delayOffset));
+
+            // Slide up
+            TranslateTransition tt = new TranslateTransition(Duration.millis(400), node);
+            tt.setToY(0);
+            tt.setDelay(Duration.millis((i * 80) + delayOffset));
+
+            ft.play();
+            tt.play();
+        }
+    }
+
+    // 2. Hover Scale Pop Animation
+    private void applyHoverScale(Node node, double scaleTo) {
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
+        scaleIn.setToX(scaleTo);
+        scaleIn.setToY(scaleTo);
+
+        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
+        scaleOut.setToX(1.0);
+        scaleOut.setToY(1.0);
+
+        node.setOnMouseEntered(e -> scaleIn.playFromStart());
+        node.setOnMouseExited(e -> scaleOut.playFromStart());
+    }
+
+    // =========================================================================
+    // UI BUILDERS
+    // =========================================================================
 
     private HBox buildTopMenu() {
         HBox menu = new HBox(8);
@@ -90,7 +141,7 @@ public class Community_Dashboard extends VBox {
         Button groupsBtn = createMenuTab("◈  Groups", false);
         Button eventsBtn = createMenuTab("◷  Events", false);
 
-        // --- RESTORED CONNECTIVITY ---
+        homeBtn.setOnAction(e -> mainLayout.setCenter(new Community_Dashboard(mainLayout))); 
         groupsBtn.setOnAction(e -> mainLayout.setCenter(new Groups_Page(mainLayout)));
         eventsBtn.setOnAction(e -> mainLayout.setCenter(new Community_Events_Page(mainLayout)));
         followingBtn.setOnAction(e -> mainLayout.setCenter(new Community_Following_Page(mainLayout)));
@@ -108,7 +159,7 @@ public class Community_Dashboard extends VBox {
         } else {
             button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 10; -fx-padding: 10 18;");
             button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #111827; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 10; -fx-padding: 10 18;"));
-            button.setOnMouseExited(e -> button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 10; -fx-padding: 10 18;"));
+            button.setOnMouseExited(e -> button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -background-radius: 10; -fx-padding: 10 18;"));
         }
         return button;
     }
@@ -121,6 +172,7 @@ public class Community_Dashboard extends VBox {
         VBox welcomeCard = new VBox(5);
         welcomeCard.setPadding(new Insets(22, 25, 22, 25));
         welcomeCard.setStyle("-fx-background-color: linear-gradient(to right, #172554, #2563eb); -fx-background-radius: 18; -fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.12), 18, 0, 0, 5);");
+        applyHoverScale(welcomeCard, 1.015); // Add hover animation
 
         Label small = new Label("ATHLIX COMMUNITY");
         small.setStyle("-fx-text-fill: #bfdbfe; -fx-font-size: 11px; -fx-font-weight: bold;");
@@ -136,11 +188,14 @@ public class Community_Dashboard extends VBox {
         StackPane carousel = buildAdvertisementCarousel();
         HBox createPost = buildCreatePostTrigger();
 
+        // Feed Post loading...
+        File postImage = new File("src/main/resources/assests/images/stadium.jpg"); 
+        
         postList = new VBox(16);
         postList.getChildren().addAll(
-                buildFeedPost("Virat Kohli", "Looking for a practice match this weekend! Anyone interested?", "2 min ago", "VK", "#4338ca"),
-                buildFeedPost("Rohit Sharma", "Great win today in the tournament. Proud of the team's performance! 🏆", "18 min ago", "RS", "#047857"),
-                buildFeedPost("Hardik Pandya", "Training session done. Time to get better every single day. 💪", "42 min ago", "HP", "#7c3aed")
+            buildFeedPost("Virat Kohli", "Looking for a practice match this weekend! Anyone interested?", "2 min ago", "VK", "#4338ca"),
+            buildFeedPostWithImage("Rohit Sharma", "Great win today in the tournament. Proud of the team's performance! 🏆", "18 min ago", "RS", "#047857", postImage.exists() ? postImage : null),
+            buildFeedPost("Hardik Pandya", "Training session done. Time to get better every single day. 💪", "42 min ago", "HP", "#7c3aed")
         );
 
         ScrollPane feedScroll = new ScrollPane(postList);
@@ -171,11 +226,12 @@ public class Community_Dashboard extends VBox {
         wrapper.setClip(clip);
 
         adBox = new HBox(0);
+        
         adBox.getChildren().addAll(
-                createAdCard("Live Tournament", "Watch the City Finals this Sunday.", "#fef3c7", "#b45309", "🏆"),
-                createAdCard("Cricket Gear Sale", "Up to 50% off on premium cricket gear.", "#e0e7ff", "#4338ca", "🏏"),
-                createAdCard("Pro Academy", "Train with professional cricket coaches.", "#dcfce7", "#047857", "🎯"),
-                createAdCard("AthliX Challenge", "Join this week's player challenge.", "#fce7f3", "#be185d", "🔥")
+            createImageAdCard("Malwa Premier League", "Indore's Biggest Cricket Venture! Winner gets 11,000/-", "/assests/images/crk_tor(1).jpg", "#1e293b"),
+            createImageAdCard("World Cricket Tournament", "Get your tickets now for the ultimate global showdown.", "/assests/images/crk_tor(2).jpg", "#0f172a"),
+            createImageAdCard("Westport Annual Cup", "Cricket Championship - Sat 18 July 2026 @ Westport Arena.", "/assests/images/crk_tor(3).jpg", "#450a0a"),
+            createImageAdCard("Super 6 Box Cricket", "16 Teams Only | 6+1 Players | Spark Sports Hub.", "/assests/images/crk_tor(4).jpg", "#172554")
         );
 
         wrapper.getChildren().add(adBox);
@@ -200,6 +256,68 @@ public class Community_Dashboard extends VBox {
         return container;
     }
 
+    private StackPane createImageAdCard(String title, String subtitle, String imgPath, String bgColor) {
+        StackPane card = new StackPane();
+        card.setPrefSize(AD_WIDTH, 150);
+        card.setMinSize(AD_WIDTH, 150);
+        card.setCursor(Cursor.HAND);
+        card.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 18;");
+
+        HBox layout = new HBox(25);
+        layout.setAlignment(Pos.CENTER_LEFT);
+        layout.setPadding(new Insets(15, 30, 15, 15));
+
+        StackPane imageBox = new StackPane();
+        imageBox.setPrefSize(120, 120);
+        imageBox.setMinSize(120, 120);
+        imageBox.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12;");
+
+        ImageView imageView = new ImageView();
+        try {
+            String finalPath = null;
+            java.net.URL res = getClass().getResource(imgPath);
+            if (res != null) finalPath = res.toExternalForm();
+            else {
+                java.io.File file = new java.io.File("src/main/resources" + imgPath);
+                if (file.exists()) finalPath = file.toURI().toString();
+            }
+            if (finalPath != null) {
+                Image img = new Image(finalPath, 120, 120, false, true); 
+                imageView.setImage(img);
+            }
+        } catch (Exception e) {}
+
+        imageView.setFitWidth(120);
+        imageView.setFitHeight(120);
+        Rectangle clip = new Rectangle(120, 120);
+        clip.setArcWidth(24);
+        clip.setArcHeight(24);
+        imageView.setClip(clip);
+
+        imageBox.getChildren().add(imageView);
+
+        VBox textBox = new VBox(7);
+        textBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label badge = new Label("FEATURED TOURNAMENT");
+        badge.setStyle("-fx-text-fill: #10b981; -fx-font-size: 10px; -fx-font-weight: bold; -fx-background-color: #dcfce3; -fx-padding: 3 8; -fx-background-radius: 6;");
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;");
+
+        Label subtitleLabel = new Label(subtitle);
+        subtitleLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 13px;");
+
+        textBox.getChildren().addAll(badge, titleLabel, subtitleLabel);
+        layout.getChildren().addAll(imageBox, textBox);
+        card.getChildren().add(layout);
+
+        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: derive(" + bgColor + ", 10%); -fx-background-radius: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 12, 0, 0, 3);"));
+        card.setOnMouseExited(e -> card.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 18;"));
+
+        return card;
+    }
+
     private void moveCarousel(int direction) {
         int newIndex = currentAdIndex + direction;
         if (newIndex < 0) newIndex = TOTAL_ADS - 1;
@@ -217,47 +335,9 @@ public class Community_Dashboard extends VBox {
         button.setPrefSize(38, 38);
         button.setCursor(Cursor.HAND);
         button.setStyle("-fx-background-color: rgba(255,255,255,0.95); -fx-text-fill: #111827; -fx-font-size: 25px; -fx-font-weight: bold; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 8, 0, 0, 2);");
+        
+        applyHoverScale(button, 1.05); // Add hover animation
         return button;
-    }
-
-    private StackPane createAdCard(String title, String subtitle, String background, String textColor, String icon) {
-        StackPane card = new StackPane();
-        card.setPrefSize(AD_WIDTH, 150);
-        card.setMinSize(AD_WIDTH, 150);
-        card.setCursor(Cursor.HAND);
-        card.setStyle("-fx-background-color: " + background + "; -fx-background-radius: 18;");
-
-        HBox layout = new HBox(25);
-        layout.setAlignment(Pos.CENTER_LEFT);
-        layout.setPadding(new Insets(20, 50, 20, 30));
-
-        StackPane iconBox = new StackPane();
-        iconBox.setPrefSize(95, 95);
-        iconBox.setMinSize(95, 95);
-        iconBox.setStyle("-fx-background-color: rgba(255,255,255,0.65); -fx-background-radius: 20;");
-
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 45px;");
-        iconBox.getChildren().add(iconLabel);
-
-        VBox textBox = new VBox(7);
-        Label badge = new Label("FEATURED");
-        badge.setStyle("-fx-text-fill: " + textColor + "; -fx-font-size: 10px; -fx-font-weight: bold;");
-
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-font-size: 22px; -fx-font-weight: bold;");
-
-        Label subtitleLabel = new Label(subtitle);
-        subtitleLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-font-size: 13px;");
-
-        textBox.getChildren().addAll(badge, titleLabel, subtitleLabel);
-        layout.getChildren().addAll(iconBox, textBox);
-        card.getChildren().add(layout);
-
-        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: derive(" + background + ", -5%); -fx-background-radius: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 12, 0, 0, 3);"));
-        card.setOnMouseExited(e -> card.setStyle("-fx-background-color: " + background + "; -fx-background-radius: 18;"));
-
-        return card;
     }
 
     private HBox buildCreatePostTrigger() {
@@ -266,6 +346,8 @@ public class Community_Dashboard extends VBox {
         box.setAlignment(Pos.CENTER_LEFT);
         box.setCursor(Cursor.HAND);
         box.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #e5e7eb; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.05), 10, 0, 0, 2);");
+        
+        applyHoverScale(box, 1.02); // Add hover animation
 
         StackPane avatar = createAvatar("VM", "#2563eb", 42);
 
@@ -287,43 +369,43 @@ public class Community_Dashboard extends VBox {
     }
 
     private void showCreatePostModal() {
-        Stage modal = new Stage();
-        modal.initModality(Modality.APPLICATION_MODAL);
-        modal.initOwner(getScene().getWindow());
-        modal.setTitle("Create Post");
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(15, 23, 42, 0.65);"); 
+        overlay.setAlignment(Pos.CENTER);
 
         VBox root = new VBox(18);
-        root.setPadding(new Insets(25));
-        root.setPrefWidth(520);
-        root.setStyle("-fx-background-color: #f8fafc;");
+        root.setPadding(new Insets(30));
+        root.setMaxWidth(550); 
+        root.setMaxHeight(Region.USE_PREF_SIZE); 
+        root.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 25, 0, 0, 10);");
 
         Label title = new Label("Create a Community Post");
-        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
         Label subtitle = new Label("Share an update, achievement, question or training moment.");
-        subtitle.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
+        subtitle.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px;");
 
         TextArea input = new TextArea();
         input.setPromptText("What's happening in your cricket journey?");
         input.setPrefRowCount(6);
         input.setWrapText(true);
-        input.setStyle("-fx-background-color: white; -fx-border-color: #dbe2ea; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 14px;");
+        input.setStyle("-fx-background-color: white; -fx-border-color: #dbe2ea; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 15px;");
 
-        HBox uploadRow = new HBox(12);
+        HBox uploadRow = new HBox(15);
         uploadRow.setAlignment(Pos.CENTER_LEFT);
 
         Button uploadButton = new Button("📷 Add Photo");
         uploadButton.setCursor(Cursor.HAND);
-        uploadButton.setStyle("-fx-background-color: #eef2ff; -fx-text-fill: #4338ca; -fx-font-weight: bold; -fx-background-radius: 9; -fx-padding: 9 15;");
+        uploadButton.setStyle("-fx-background-color: #eef2ff; -fx-text-fill: #4338ca; -fx-font-weight: bold; -fx-background-radius: 9; -fx-padding: 10 18; -fx-font-size: 13px;");
 
         Label fileLabel = new Label("No photo selected");
-        fileLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
+        fileLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
         ImageView preview = new ImageView();
-        preview.setFitWidth(430);
-        preview.setFitHeight(220);
+        preview.setFitWidth(450);
         preview.setPreserveRatio(true);
         preview.setVisible(false);
+        preview.setManaged(false); 
 
         final File[] selectedFile = {null};
 
@@ -332,12 +414,13 @@ public class Community_Dashboard extends VBox {
             chooser.setTitle("Choose Post Image");
             chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
 
-            File file = chooser.showOpenDialog(modal);
+            File file = chooser.showOpenDialog(mainLayout.getScene().getWindow());
             if (file != null) {
                 selectedFile[0] = file;
                 fileLabel.setText(file.getName());
                 preview.setImage(new Image(file.toURI().toString()));
                 preview.setVisible(true);
+                preview.setManaged(true);
             }
         });
 
@@ -345,11 +428,11 @@ public class Community_Dashboard extends VBox {
 
         Button cancelButton = new Button("Cancel");
         cancelButton.setCursor(Cursor.HAND);
-        cancelButton.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 9; -fx-padding: 10 22;");
+        cancelButton.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 9; -fx-padding: 10 22; -fx-font-size: 14px;");
 
         Button publishButton = new Button("Publish Post");
         publishButton.setCursor(Cursor.HAND);
-        publishButton.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 9; -fx-padding: 10 22;");
+        publishButton.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 9; -fx-padding: 10 22; -fx-font-size: 14px;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -358,7 +441,7 @@ public class Community_Dashboard extends VBox {
         bottom.setAlignment(Pos.CENTER_RIGHT);
         bottom.getChildren().addAll(cancelButton, spacer, publishButton);
 
-        cancelButton.setOnAction(e -> modal.close());
+        cancelButton.setOnAction(e -> this.getChildren().remove(overlay));
 
         publishButton.setOnAction(e -> {
             String content = input.getText().trim();
@@ -368,17 +451,28 @@ public class Community_Dashboard extends VBox {
                 return;
             }
 
+            // Animate new post entry
             VBox newPost = buildFeedPostWithImage("Vikram Malhotra", content, "Just now", "VM", "#2563eb", selectedFile[0]);
             postList.getChildren().add(0, newPost);
-            modal.close();
+            
+            this.getChildren().remove(overlay);
         });
 
         root.getChildren().addAll(title, subtitle, input, uploadRow, preview, bottom);
 
-        Scene scene = new Scene(root);
-        modal.setScene(scene);
-        modal.setResizable(false);
-        modal.show();
+        // Slide/Fade Modal Animation
+        root.setOpacity(0);
+        root.setTranslateY(30);
+        FadeTransition ft = new FadeTransition(Duration.millis(300), root);
+        ft.setToValue(1);
+        TranslateTransition tt = new TranslateTransition(Duration.millis(300), root);
+        tt.setToY(0);
+
+        overlay.getChildren().add(root);
+        this.getChildren().add(overlay);
+        
+        ft.play();
+        tt.play();
     }
 
     private VBox buildFeedPost(String user, String content, String time, String initials, String avatarColor) {
@@ -389,6 +483,8 @@ public class Community_Dashboard extends VBox {
         VBox post = new VBox(15);
         post.setPadding(new Insets(20));
         post.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.05), 10, 0, 0, 3);");
+        
+        applyHoverScale(post, 1.015); // Add hover animation
 
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -544,7 +640,6 @@ public class Community_Dashboard extends VBox {
         viewAll.setCursor(Cursor.HAND);
         viewAll.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 11px; -fx-font-weight: bold;");
         
-        // --- RESTORED CONNECTIVITY ---
         viewAll.setOnMouseClicked(e -> mainLayout.setCenter(new Groups_Page(mainLayout)));
         
         titleRow.getChildren().addAll(title, spacer, viewAll);
@@ -574,7 +669,6 @@ public class Community_Dashboard extends VBox {
 
         row.getChildren().addAll(iconLabel, text);
         
-        // --- RESTORED CONNECTIVITY ---
         row.setOnMouseClicked(e -> mainLayout.setCenter(new Group_Details(mainLayout)));
         
         return row;
@@ -593,7 +687,6 @@ public class Community_Dashboard extends VBox {
         viewAll.setCursor(Cursor.HAND);
         viewAll.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 9;");
         
-        // --- RESTORED CONNECTIVITY ---
         viewAll.setOnAction(e -> mainLayout.setCenter(new Community_Events_Page(mainLayout)));
         
         card.getChildren().add(viewAll);
@@ -686,6 +779,8 @@ public class Community_Dashboard extends VBox {
         VBox card = new VBox(12);
         card.setPadding(new Insets(20));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #e5e7eb; -fx-border-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.05), 10, 0, 0, 3);");
+        
+        applyHoverScale(card, 1.02); // Add hover animation
         return card;
     }
 
