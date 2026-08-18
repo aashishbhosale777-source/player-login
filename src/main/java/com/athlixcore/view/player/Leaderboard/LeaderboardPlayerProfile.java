@@ -1,10 +1,10 @@
 package com.athlixcore.view.player.Leaderboard;
 
+import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -21,10 +21,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.util.Duration;
 
-public class LeaderboardPlayerProfile extends ScrollPane {
+// CHANGED: Now extends StackPane so we can overlay the Modals on top of the ScrollPane
+public class LeaderboardPlayerProfile extends StackPane {
 
     private BorderPane mainLayout;
     private String playerName;
@@ -33,6 +33,9 @@ public class LeaderboardPlayerProfile extends ScrollPane {
 
     private HBox subTabs;
     private VBox dynamicContentArea;
+    
+    // NEW: The overlay pane for internal Modals
+    private StackPane overlayPane; 
 
     public LeaderboardPlayerProfile(BorderPane mainLayout, String playerName, String imgPath, Runnable onBack) {
         this.mainLayout = mainLayout;
@@ -40,9 +43,11 @@ public class LeaderboardPlayerProfile extends ScrollPane {
         this.imgPath = imgPath;
         this.onBack = onBack;
 
-        this.setFitToWidth(true);
-        this.setStyle("-fx-background-color: linear-gradient(to bottom right, #f8fafc, #e2e8f0); -fx-background-insets: 0; -fx-padding: 0;");
-        this.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
+        // --- MAIN SCROLL PANE (Background Content) ---
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: linear-gradient(to bottom right, #f8fafc, #e2e8f0); -fx-background-insets: 0; -fx-padding: 0;");
+        scrollPane.getStylesheets().add("data:text/css,.scroll-pane > .viewport { -fx-background-color: transparent; }");
 
         VBox pageLayout = new VBox();
 
@@ -53,7 +58,16 @@ public class LeaderboardPlayerProfile extends ScrollPane {
         dynamicContentArea.setAlignment(Pos.TOP_LEFT);
 
         pageLayout.getChildren().addAll(headerArea, dynamicContentArea);
-        this.setContent(pageLayout);
+        scrollPane.setContent(pageLayout);
+        
+        // --- INTERNAL MODAL OVERLAY ---
+        overlayPane = new StackPane();
+        overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);"); // Dark semi-transparent background
+        overlayPane.setVisible(false); // Hidden by default
+        overlayPane.setOnMouseClicked(e -> e.consume()); // Block clicks from passing through
+
+        // Add both to the root StackPane
+        this.getChildren().addAll(scrollPane, overlayPane);
         
         switchTab("Overview");
     }
@@ -260,15 +274,15 @@ public class LeaderboardPlayerProfile extends ScrollPane {
         return box;
     }
 
+    // =========================================================================
+    // IN-APP MODAL 1: RECENT FORM DETAILS
+    // =========================================================================
     private void showRecentFormDetails(String score, String matchStr) {
-        Stage modal = new Stage();
-        modal.initModality(Modality.APPLICATION_MODAL);
-        modal.setTitle("Innings Breakdown");
-
-        VBox root = new VBox(25);
-        root.setPadding(new Insets(35));
-        root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: white;");
+        VBox modal = new VBox(25);
+        modal.setMaxSize(450, 400); // Fixed size for the modal
+        modal.setPadding(new Insets(35));
+        modal.setAlignment(Pos.CENTER);
+        modal.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 20, 0, 0, 5);");
 
         Label title = new Label(matchStr);
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
@@ -297,12 +311,19 @@ public class LeaderboardPlayerProfile extends ScrollPane {
         Button closeBtn = new Button("Close");
         closeBtn.setCursor(Cursor.HAND);
         closeBtn.setStyle("-fx-background-color: #0f172a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 40; -fx-font-size: 14px;");
-        closeBtn.setOnAction(e -> modal.close());
+        closeBtn.setOnAction(e -> overlayPane.setVisible(false));
 
-        root.getChildren().addAll(title, scoreBox, boundaries, closeBtn);
-        Scene scene = new Scene(root, 450, 400);
-        modal.setScene(scene);
-        modal.showAndWait();
+        modal.getChildren().addAll(title, scoreBox, boundaries, closeBtn);
+
+        // Display the modal inside the overlayPane
+        overlayPane.getChildren().setAll(modal);
+        overlayPane.setVisible(true);
+
+        // Add pop-in animation
+        ScaleTransition st = new ScaleTransition(Duration.millis(200), modal);
+        st.setFromX(0.8); st.setFromY(0.8);
+        st.setToX(1.0); st.setToY(1.0);
+        st.play();
     }
 
     private VBox createModalStatBlock(String label, String value) {
@@ -458,10 +479,8 @@ public class LeaderboardPlayerProfile extends ScrollPane {
 
     private void updateMatchesFilterBtnStyle(Button b, boolean active) {
         if (active) {
-            // Pill shape, deep blue
             b.setStyle("-fx-background-color: #1e3a8a; -fx-text-fill: white; -fx-font-weight: bold; -fx-border-radius: 25; -fx-background-radius: 25; -fx-padding: 8 25; -fx-font-size: 13px;");
         } else {
-            // Pill shape, white with gray border
             b.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-text-fill: #94a3b8; -fx-border-radius: 25; -fx-background-radius: 25; -fx-padding: 8 25; -fx-font-size: 13px;");
         }
     }
@@ -780,15 +799,15 @@ public class LeaderboardPlayerProfile extends ScrollPane {
         return widget;
     }
 
+    // =========================================================================
+    // IN-APP MODAL 2: HEAD TO HEAD COMPARISON
+    // =========================================================================
     private void showHeadToHeadComparison(String player1, String player2) {
-        Stage modal = new Stage();
-        modal.initModality(Modality.APPLICATION_MODAL);
-        modal.setTitle("Head-to-Head Comparison");
-
-        VBox root = new VBox(30);
-        root.setPadding(new Insets(40, 50, 40, 50));
-        root.setAlignment(Pos.TOP_CENTER);
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b);");
+        VBox modal = new VBox(30);
+        modal.setMaxSize(600, 650);
+        modal.setPadding(new Insets(40, 50, 40, 50));
+        modal.setAlignment(Pos.TOP_CENTER);
+        modal.setStyle("-fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b); -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 5);");
 
         Label title = new Label("HEAD-TO-HEAD ANALYSIS");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white; -fx-letter-spacing: 2px;");
@@ -834,13 +853,19 @@ public class LeaderboardPlayerProfile extends ScrollPane {
         Button closeBtn = new Button("Close Comparison");
         closeBtn.setStyle("-fx-background-color: transparent; -fx-border-color: #64748b; -fx-border-radius: 8; -fx-text-fill: #cbd5e1; -fx-font-weight: bold; -fx-padding: 10 40; -fx-font-size: 14px;");
         closeBtn.setCursor(Cursor.HAND);
-        closeBtn.setOnAction(e -> modal.close());
+        closeBtn.setOnAction(e -> overlayPane.setVisible(false));
 
-        root.getChildren().addAll(title, playersBox, statsBox, closeBtn);
+        modal.getChildren().addAll(title, playersBox, statsBox, closeBtn);
         
-        Scene scene = new Scene(root, 600, 650);
-        modal.setScene(scene);
-        modal.showAndWait();
+        // Display the modal inside the overlayPane
+        overlayPane.getChildren().setAll(modal);
+        overlayPane.setVisible(true);
+
+        // Add pop-in animation
+        ScaleTransition st = new ScaleTransition(Duration.millis(200), modal);
+        st.setFromX(0.8); st.setFromY(0.8);
+        st.setToX(1.0); st.setToY(1.0);
+        st.play();
     }
 
     private HBox buildStatRow(String statName, String val1, String val2, boolean p1Wins) {

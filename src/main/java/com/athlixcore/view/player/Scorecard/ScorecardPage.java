@@ -1,5 +1,3 @@
-
-
 package com.athlixcore.view.player.Scorecard;
 
 import javafx.animation.ScaleTransition;
@@ -17,8 +15,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -250,13 +251,38 @@ public class ScorecardPage {
         }
         topHeader.getChildren().addAll(stageBadge, spacer, statusBadge);
 
-        HBox scoreBox = new HBox(50);
+        // ==============================================================================
+        // UPDATED SCORE BOX FOR PERFECT CENTERING AND VISIBILITY
+        // ==============================================================================
+        HBox scoreBox = new HBox();
         scoreBox.setAlignment(Pos.CENTER);
+        
+        // Use fixed width for team boxes to force the VS icon into the absolute center
         VBox team1Box = createTeamScoreBlock(logoUrl1, team1, score1);
-        Label vsLabel = new Label("VS");
-        vsLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 16px; -fx-font-weight: bold;");
+        team1Box.setAlignment(Pos.CENTER);
+        team1Box.setPrefWidth(220); 
+        
+        ImageView vsIcon = loadRobustImage("/assests/images/scorecard.png");
+        vsIcon.setFitWidth(75);
+        vsIcon.setFitHeight(75);
+        vsIcon.setPreserveRatio(false); 
+        
+        // Changed to rounded Rectangle instead of tight Circle so the glow shows completely
+        Rectangle vsClip = new Rectangle(75, 75);
+        vsClip.setArcWidth(20);
+        vsClip.setArcHeight(20);
+        vsIcon.setClip(vsClip);
+
+        StackPane vsPane = new StackPane(vsIcon);
+        vsPane.setAlignment(Pos.CENTER);
+        vsPane.setPadding(new Insets(0, 20, 0, 20)); // Margin around the VS icon
+        
         VBox team2Box = createTeamScoreBlock(logoUrl2, team2, score2);
-        scoreBox.getChildren().addAll(team1Box, vsLabel, team2Box);
+        team2Box.setAlignment(Pos.CENTER);
+        team2Box.setPrefWidth(220);
+
+        scoreBox.getChildren().addAll(team1Box, vsPane, team2Box);
+        // ==============================================================================
 
         HBox footerBox = new HBox();
         footerBox.setAlignment(Pos.CENTER_LEFT);
@@ -282,6 +308,8 @@ public class ScorecardPage {
         HBox actionBox = new HBox(10);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
+        String fullMatchTitle = matchStage + " (" + team1 + " vs " + team2 + ")";
+
         // --- THE EDIT BUTTON (Only for My Matches) ---
         if (isMyMatch) {
             Button editBtn = new Button("Edit ✏️");
@@ -290,7 +318,6 @@ public class ScorecardPage {
             editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #fef08a; -fx-text-fill: #854d0e; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"));
             
             editBtn.setOnAction(e -> {
-                String fullMatchTitle = matchStage + " (" + team1 + " vs " + team2 + ")";
                 ScorecardMyMatchesEditButton editorPage = new ScorecardMyMatchesEditButton(fullMatchTitle, team1, team2, () -> {
                     rootContainer.getChildren().setAll(mainScrollPane);
                 });
@@ -299,17 +326,14 @@ public class ScorecardPage {
             actionBox.getChildren().add(editBtn);
         }
 
-        // --- VIEW SCORECARD BUTTON (Routes differently based on the tab) ---
+        // --- VIEW SCORECARD BUTTON ---
         Button viewScorecardBtn = new Button("View Scorecard ➔");
         viewScorecardBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;");
         viewScorecardBtn.setOnMouseEntered(e -> viewScorecardBtn.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"));
         viewScorecardBtn.setOnMouseExited(e -> viewScorecardBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"));
 
         viewScorecardBtn.setOnAction(e -> {
-            String fullMatchTitle = matchStage + " (" + team1 + " vs " + team2 + ")";
-            
             if (isMyMatch) {
-                // Route to Dynamic File (My Matches)
                 int[] emptyRuns = {0, 0}; int[] emptyWickets = {0, 0}; int[] emptyBalls = {0, 0};
                 Map<String, int[]> emptyBatting = new LinkedHashMap<>();
                 Map<String, int[]> emptyBowling = new LinkedHashMap<>();
@@ -323,7 +347,6 @@ public class ScorecardPage {
                 );
                 rootContainer.getChildren().setAll(detailedScorecard.getView());
             } else {
-                // Route to Static File (Current/Upcoming/Completed Matches) -> Passes team names!
                 ScorecardPageViewScorecard standardScorecard = new ScorecardPageViewScorecard(
                     fullMatchTitle, team1, team2,
                     () -> rootContainer.getChildren().setAll(mainScrollPane)
@@ -357,8 +380,7 @@ public class ScorecardPage {
         VBox box = new VBox(8);
         box.setAlignment(Pos.CENTER);
 
-        ImageView logoView = new ImageView();
-        try { Image img = new Image(logoUrl, true); logoView.setImage(img); } catch (Exception e) {}
+        ImageView logoView = loadRobustImage(logoUrl);
         logoView.setFitWidth(46); logoView.setFitHeight(46);
         logoView.setClip(new Circle(23, 23, 23));
 
@@ -374,6 +396,32 @@ public class ScorecardPage {
 
         box.getChildren().addAll(logoView, t, s);
         return box;
+    }
+
+    // --- ROBUST IMAGE LOADER HELPER ---
+    private ImageView loadRobustImage(String imagePath) {
+        ImageView imageView = new ImageView();
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                if (imagePath.startsWith("http")) {
+                    imageView.setImage(new Image(imagePath, true));
+                } else if (imagePath.startsWith("file:")) {
+                    imageView.setImage(new Image(imagePath, true));
+                } else {
+                    String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+                    File file = new File("src/main/resources/" + cleanPath);
+                    if (file.exists()) {
+                        imageView.setImage(new Image(file.toURI().toString(), true));
+                    } else {
+                        InputStream stream = getClass().getResourceAsStream(imagePath.startsWith("/") ? imagePath : "/" + imagePath);
+                        if (stream != null) {
+                            imageView.setImage(new Image(stream));
+                        }
+                    }
+                }
+            } catch (Exception e) {}
+        }
+        return imageView;
     }
 
     private Label createTab(String text, boolean active) {

@@ -3,8 +3,6 @@ package com.athlixcore.view.player.Tournament.Completed_Tournament;
 import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamentOCap;
 import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamentPCap;
 
-// import com.athlix.view.Tournament.Current_Tournament.CurrentTournamentOCap;
-
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

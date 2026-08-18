@@ -4,20 +4,24 @@ import com.athlixcore.view.player.Academy.Academy_Dashboard;
 import com.athlixcore.view.player.Tournament.Completed_Tournament.CompletedTournamentView;
 import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamentLiveMatchview;
 import com.athlixcore.view.player.Tournament.Tournament_dashboard.TournamentPage;
+import com.athlixcore.view.player.Training_Fitness.Traning_dashboard;
 import com.athlixcore.view.player.community.Community_Dashboard;
 import com.athlixcore.view.player.community.Community_Events_Page;
 import com.athlixcore.view.player.community.Community_Following_Page;
 import com.athlixcore.view.player.community.Groups_Page;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -47,16 +51,13 @@ public class Player_Dashboard extends ScrollPane {
         VBox pageLayout = new VBox(25);
         pageLayout.setPadding(new Insets(30, 40, 40, 40));
 
-        // --- 1. TOP BAR ---
-        // pageLayout.getChildren().add(buildTopBar());
-
-        // --- 2. HERO SECTION ---
+        // --- 1. HERO SECTION ---
         pageLayout.getChildren().add(buildHeroCard());
 
-        // --- 3. DYNAMIC MATCHES CAROUSEL ---
+        // --- 2. DYNAMIC MATCHES CAROUSEL ---
         pageLayout.getChildren().add(buildTopMatchesWidget());
 
-        // --- 4. MAIN SPLIT LAYOUT ---
+        // --- 3. MAIN SPLIT LAYOUT ---
         HBox mainSplit = new HBox(25);
 
         // LEFT COLUMN
@@ -85,90 +86,65 @@ public class Player_Dashboard extends ScrollPane {
     }
 
     // =========================================================================
-    // SMART ROUTER ENGINE
+    // SMART ROUTER ENGINE (Fixes the Routing & Sidebar Selection)
     // =========================================================================
-    private void navigateAndUpdateSidebar(String targetTabName, Node newPage) {
-        if(newPage != null) {
-            mainLayout.setCenter(newPage);
+    private void navigateAndUpdateSidebar(String targetTabName, Node specificPage) {
+        // 1. Search the entire screen for the Sidebar ListView and trigger it
+        if (mainLayout.getScene() != null) {
+            findAndSelectInListView(mainLayout.getScene().getRoot(), targetTabName);
         }
-        Node sidebar = mainLayout.getLeft();
-        if (sidebar != null) {
-            updateSidebarSelectionRecursively(sidebar, targetTabName);
+
+        // 2. If a specific deep-linked page is requested, overwrite the default page
+        if (specificPage != null) {
+            Platform.runLater(() -> {
+                // Pause slightly so the default sidebar click doesn't overwrite our deep-link
+                PauseTransition pause = new PauseTransition(Duration.millis(50));
+                pause.setOnFinished(e -> {
+                    mainLayout.setCenter(specificPage);
+                    
+                    // Add smooth entrance animation for deep link
+                    specificPage.setTranslateY(80);
+                    specificPage.setOpacity(0);
+                    FadeTransition ft = new FadeTransition(Duration.millis(400), specificPage);
+                    ft.setToValue(1.0);
+                    TranslateTransition tt = new TranslateTransition(Duration.millis(400), specificPage);
+                    tt.setToY(0);
+                    ft.play();
+                    tt.play();
+                });
+                pause.play();
+            });
         }
     }
 
-    private void updateSidebarSelectionRecursively(Node node, String targetTabName) {
-        if (node instanceof javafx.scene.control.ListView) {
+    private boolean findAndSelectInListView(Node node, String targetTabName) {
+        if (node instanceof ListView) {
             @SuppressWarnings("unchecked")
-            javafx.scene.control.ListView<String> listView = (javafx.scene.control.ListView<String>) node;
+            ListView<String> listView = (ListView<String>) node;
             for (int i = 0; i < listView.getItems().size(); i++) {
                 String item = listView.getItems().get(i);
                 if (item != null && (item.equalsIgnoreCase(targetTabName) || item.contains(targetTabName))) {
-                    listView.getSelectionModel().select(i);
-                    return; 
-                }
-            }
-        } 
-        else if (node instanceof Button) {
-            Button btn = (Button) node;
-            String btnText = btn.getText().trim();
-            if (!btnText.isEmpty() && !btnText.contains("\n")) {
-                if (btnText.equalsIgnoreCase(targetTabName) || btnText.contains(targetTabName)) {
-                    btn.setStyle("-fx-background-color: #eff6ff; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 12 20; -fx-background-radius: 0 20 20 0;");
-                } else {
-                    btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 12 20;");
+                    final int index = i;
+                    Platform.runLater(() -> listView.getSelectionModel().select(index));
+                    return true; 
                 }
             }
         }
-
         if (node instanceof javafx.scene.Parent) {
             for (Node child : ((javafx.scene.Parent) node).getChildrenUnmodifiable()) {
-                updateSidebarSelectionRecursively(child, targetTabName);
+                if (findAndSelectInListView(child, targetTabName)) return true;
             }
         }
+        return false;
     }
 
     // =========================================================================
-    // 1. TOP BAR
-    // =========================================================================
-    // private HBox buildTopBar() {
-    //     HBox topBar = new HBox(20);
-    //     topBar.setAlignment(Pos.CENTER_LEFT);
-
-    //     TextField searchField = new TextField();
-    //     searchField.setPromptText("Search players, tournaments, or stats...");
-    //     searchField.setPrefWidth(350);
-    //     searchField.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 8 15; -fx-font-size: 14px;");
-
-    //     Region spacer = new Region();
-    //     HBox.setHgrow(spacer, Priority.ALWAYS);
-
-    //     Button createBtn = new Button("Create");
-    //     createBtn.setCursor(Cursor.HAND);
-    //     createBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 25;");
-
-    //     Label notifications = new Label("🔔");
-    //     notifications.setStyle("-fx-font-size: 18px; -fx-text-fill: #64748b; -fx-cursor: hand;");
-
-    //     Label messages = new Label("✉");
-    //     messages.setStyle("-fx-font-size: 18px; -fx-text-fill: #64748b; -fx-cursor: hand;");
-
-    //     StackPane avatar = createMiniAvatar("V", "#2563eb", 36);
-    //     avatar.setCursor(Cursor.HAND);
-    //     avatar.setOnMouseClicked(e -> System.out.println("Navigate to Player Profile"));
-
-    //     topBar.getChildren().addAll(searchField, spacer, createBtn, notifications, messages, avatar);
-    //     return topBar;
-    // }
-
-    // =========================================================================
-    // 2. HERO CARD (PROFILE MASTERY REMOVED)
+    // 2. HERO CARD
     // =========================================================================
     private StackPane buildHeroCard() {
         StackPane card = new StackPane();
         card.setStyle("-fx-background-color: #0f172a; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 5);");
 
-        // 1. Player Image positioned on the right side
         ImageView playerImg = new ImageView();
         try {
             Image img = new Image("file:src/main/resources/assests/images/virat.jpg", true);
@@ -179,11 +155,9 @@ public class Player_Dashboard extends ScrollPane {
         StackPane.setAlignment(playerImg, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(playerImg, new Insets(0, 40, 0, 0));
 
-        // 2. Gradient overlay to keep text on the left readable
         Region overlay = new Region();
         overlay.setStyle("-fx-background-color: linear-gradient(to right, #0f172a 45%, rgba(15,23,42,0.85) 70%, rgba(15,23,42,0.2) 95%); -fx-background-radius: 16;");
 
-        // 3. Foreground Content layer
         HBox layout = new HBox(20);
         layout.setPadding(new Insets(30));
         layout.setAlignment(Pos.CENTER_LEFT);
@@ -209,6 +183,12 @@ public class Player_Dashboard extends ScrollPane {
         layout.getChildren().add(leftText);
 
         card.getChildren().addAll(playerImg, overlay, layout);
+
+        // Make Entire Block Clickable -> Routes to Profile Page
+        card.setCursor(Cursor.HAND);
+        card.setOnMouseClicked(e -> navigateAndUpdateSidebar("Profile", null));
+        addSimpleHoverScaleAnimation(card);
+
         return card;
     }
 
@@ -248,7 +228,7 @@ public class Player_Dashboard extends ScrollPane {
 
         Label schedule = new Label("Cricket Schedule >");
         schedule.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;");
-        schedule.setOnMouseClicked(e -> navigateAndUpdateSidebar("Tournament", new TournamentPage().getView()));
+        schedule.setOnMouseClicked(e -> navigateAndUpdateSidebar("Tournament", null));
 
         header.getChildren().addAll(tabsBox, spacer, schedule);
 
@@ -306,31 +286,25 @@ public class Player_Dashboard extends ScrollPane {
 
         Runnable liveMatchAction = () -> navigateAndUpdateSidebar("Tournament", new CurrentTournamentLiveMatchview(() -> navigateAndUpdateSidebar("Dashboard", new Player_Dashboard(mainLayout))).getView());
         Runnable completedMatchAction = () -> navigateAndUpdateSidebar("Tournament", new CompletedTournamentView(() -> navigateAndUpdateSidebar("Dashboard", new Player_Dashboard(mainLayout)), title -> System.out.println("Viewing details for: " + title)).getView());
-        Runnable upcomingMatchAction = () -> navigateAndUpdateSidebar("Tournament", new TournamentPage().getView());
+        Runnable upcomingMatchAction = () -> navigateAndUpdateSidebar("Tournament", null); 
 
         if (category.equals("Current Matches")) {
             cardsBox.getChildren().addAll(
-                createMatchCardLive("IND vs SL 2026", "1st Test, Galle International Stadium", "IN IND", "36-0", "8.3", "LK SL", "Yet to bat", "Day 1 : IND opt to bat", liveMatchAction),
-                createMatchCardLive("BAN vs AUS 2026", "1st Test, Marrara Cricket Ground", "AU AUS", "198 & 51-2", "12.0", "BD BAN", "426", "Day 3 : Tea Break", liveMatchAction),
-                createMatchCardLive("ENG vs NZ 2026", "2nd T20I, Eden Park", "EN ENG", "182/4", "20.0", "NZ NZL", "110/3", "NZ needs 73 runs in 42 balls", liveMatchAction),
-                createMatchCardLive("SA vs WI 2026", "3rd ODI, Centurion Park", "SA RSA", "250/6", "45.2", "WI WI", "0/0", "1st Innings ongoing", liveMatchAction),
-                createMatchCardLive("PAK vs AFG 2026", "1st T20I, Dubai International Stadium", "PK PAK", "154/7", "20.0", "AF AFG", "89/5", "AFG needs 66 runs", liveMatchAction)
+                createMatchCardLive("IND vs SL 2026", "1st Test, Galle", "IN IND", "36-0", "8.3", "LK SL", "Yet to bat", "Day 1 : IND opt to bat", liveMatchAction),
+                createMatchCardLive("BAN vs AUS 2026", "1st Test, Marrara", "AU AUS", "198 & 51-2", "12.0", "BD BAN", "426", "Day 3 : Tea Break", liveMatchAction),
+                createMatchCardLive("ENG vs NZ 2026", "2nd T20I, Eden Park", "EN ENG", "182/4", "20.0", "NZ NZL", "110/3", "NZ needs 73 runs", liveMatchAction)
             );
         } else if (category.equals("Upcoming Matches")) {
             cardsBox.getChildren().addAll(
-                createMatchCardUpcoming("AFG vs IRE 2026", "5th ODI, Civil Service Cricket Club", "IE Ireland", "AF Afghanistan", "Today\n3:15 PM", upcomingMatchAction),
-                createMatchCardUpcoming("ENG vs SA 2026", "1st T20I, Lord's Cricket Ground", "EN England", "SA South Africa", "Tomorrow\n6:30 PM", upcomingMatchAction),
-                createMatchCardUpcoming("MUM vs PUN 2026", "Ranji Trophy Elite, Wankhede", "MH Mumbai", "PB Punjab", "Wed, 18 Aug\n9:00 AM", upcomingMatchAction),
-                createMatchCardUpcoming("AUS vs IND 2026", "BGT 1st Test, Perth Stadium", "AU Australia", "IN India", "Thu, 26 Nov\n5:30 AM", upcomingMatchAction),
-                createMatchCardUpcoming("NZ vs PAK 2026", "3rd ODI, Wellington", "NZ New Zealand", "PK Pakistan", "Fri, 20 Nov\n8:00 AM", upcomingMatchAction)
+                createMatchCardUpcoming("AFG vs IRE 2026", "5th ODI, Civil Service", "IE Ireland", "AF Afghanistan", "Today\n3:15 PM", upcomingMatchAction),
+                createMatchCardUpcoming("ENG vs SA 2026", "1st T20I, Lord's", "EN England", "SA South Africa", "Tomorrow\n6:30 PM", upcomingMatchAction),
+                createMatchCardUpcoming("MUM vs PUN 2026", "Ranji Trophy, Wankhede", "MH Mumbai", "PB Punjab", "Wed, 18 Aug\n9:00 AM", upcomingMatchAction)
             );
         } else if (category.equals("Completed Matches")) {
             cardsBox.getChildren().addAll(
                 createMatchCardCompleted("IND vs PAK 2026", "Final, Eden Gardens", "IN IND", "210/4", "PK PAK", "198/8", "IND won by 12 runs", completedMatchAction),
                 createMatchCardCompleted("WI vs NZ 2026", "3rd ODI, Sabina Park", "WI West Indies", "280/9", "NZ New Zealand", "281/5", "NZ won by 5 wickets", completedMatchAction),
-                createMatchCardCompleted("CSK vs RCB 2026", "IPL Eliminator, Chinnaswamy", "CH CSK", "195/3", "BA RCB", "180/9", "CSK won by 15 runs", completedMatchAction),
-                createMatchCardCompleted("MI vs DC 2026", "IPL Match 45, Wankhede", "MI MI", "210/5", "DC DC", "190/8", "MI won by 20 runs", completedMatchAction),
-                createMatchCardCompleted("KKR vs SRH 2026", "IPL Match 22, Eden Gardens", "KK KKR", "175/7", "SR SRH", "178/4", "SRH won by 6 wickets", completedMatchAction)
+                createMatchCardCompleted("CSK vs RCB 2026", "IPL Eliminator", "CH CSK", "195/3", "BA RCB", "180/9", "CSK won by 15 runs", completedMatchAction)
             );
         }
 
@@ -352,7 +326,7 @@ public class Player_Dashboard extends ScrollPane {
         }
     }
 
-    private void applyHoverScaleAnimation(Node card, String baseStyle, String hoverStyle, Runnable onClickAction) {
+    private void applyHoverStyleAnimation(Node card, String baseStyle, String hoverStyle, Runnable onClickAction) {
         ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), card);
         scaleIn.setToX(1.02);
         scaleIn.setToY(1.02);
@@ -424,7 +398,7 @@ public class Player_Dashboard extends ScrollPane {
         stat.setStyle("-fx-text-fill: #d97706; -fx-font-size: 12px; -fx-font-weight: bold;");
 
         card.getChildren().addAll(top, sub, team1, team2, stat);
-        applyHoverScaleAnimation(card, baseStyle, hoverStyle, onClickAction);
+        applyHoverStyleAnimation(card, baseStyle, hoverStyle, onClickAction);
 
         return card;
     }
@@ -471,7 +445,7 @@ public class Player_Dashboard extends ScrollPane {
 
         split.getChildren().addAll(teams, ssp, rightTime);
         card.getChildren().addAll(top, sub, split);
-        applyHoverScaleAnimation(card, baseStyle, hoverStyle, onClickAction);
+        applyHoverStyleAnimation(card, baseStyle, hoverStyle, onClickAction);
 
         return card;
     }
@@ -522,7 +496,7 @@ public class Player_Dashboard extends ScrollPane {
         stat.setStyle("-fx-text-fill: #10b981; -fx-font-size: 12px; -fx-font-weight: bold;");
 
         card.getChildren().addAll(top, sub, team1, team2, stat);
-        applyHoverScaleAnimation(card, baseStyle, hoverStyle, onClickAction);
+        applyHoverStyleAnimation(card, baseStyle, hoverStyle, onClickAction);
 
         return card;
     }
@@ -542,8 +516,6 @@ public class Player_Dashboard extends ScrollPane {
         Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
         Label seeMore = new Label("See More");
         seeMore.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand;");
-        
-        seeMore.setOnMouseClicked(e -> navigateAndUpdateSidebar("Traning / Fitness", null));
 
         header.getChildren().addAll(title, sp, seeMore);
 
@@ -555,6 +527,15 @@ public class Player_Dashboard extends ScrollPane {
         );
 
         card.getChildren().addAll(header, list);
+
+        // Entire Block Clickable -> Routes to Training
+        card.setCursor(Cursor.HAND);
+        card.setOnMouseClicked(e -> {
+            Traning_dashboard.showFitnessFirst = false;
+            navigateAndUpdateSidebar("Traning / Fitness", null);
+        });
+        addSimpleHoverScaleAnimation(card);
+
         return card;
     }
 
@@ -626,6 +607,11 @@ public class Player_Dashboard extends ScrollPane {
         );
         card.getChildren().addAll(header, body, actions);
 
+        // Entire Block Clickable -> Routes to Community
+        card.setCursor(Cursor.HAND);
+        card.setOnMouseClicked(e -> navigateAndUpdateSidebar("Community", null));
+        addSimpleHoverScaleAnimation(card);
+
         return card;
     }
 
@@ -648,9 +634,7 @@ public class Player_Dashboard extends ScrollPane {
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #0f172a;");
         Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
         Label seeMore = new Label("See More");
-        seeMore.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand;");
-        
-        seeMore.setOnMouseClicked(e -> navigateAndUpdateSidebar("Traning / Fitness", null));
+        seeMore.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 12px; -fx-font-weight: bold;");
 
         header.getChildren().addAll(title, sp, seeMore);
 
@@ -684,6 +668,15 @@ public class Player_Dashboard extends ScrollPane {
         );
 
         card.getChildren().addAll(header, readinessRow, metrics);
+
+        // Entire Block Clickable -> Routes to Fitness
+        card.setCursor(Cursor.HAND);
+        card.setOnMouseClicked(e -> {
+            Traning_dashboard.showFitnessFirst = true;
+            navigateAndUpdateSidebar("Traning / Fitness", null);
+        });
+        addSimpleHoverScaleAnimation(card);
+
         return card;
     }
 
@@ -755,8 +748,8 @@ public class Player_Dashboard extends ScrollPane {
 
         VBox list = new VBox(10);
         list.getChildren().addAll(
-            createNotifRow("✓", "Tournament Approval", "Your entry for Elite Series confirmed.", "#10b981", "#dcfce3", () -> navigateAndUpdateSidebar("Tournament", new TournamentPage().getView())),
-            createNotifRow("✉", "New Message from Coach", "Rahul sent you a training update.", "#2563eb", "#eff6ff", () -> navigateAndUpdateSidebar("Academy", new Academy_Dashboard().getView()))
+            createNotifRow("✓", "Tournament Approval", "Your entry for Elite Series confirmed.", "#10b981", "#dcfce3", () -> navigateAndUpdateSidebar("Tournament", null)),
+            createNotifRow("✉", "New Message from Coach", "Rahul sent you a training update.", "#2563eb", "#eff6ff", () -> navigateAndUpdateSidebar("Academy", null))
         );
 
         card.getChildren().addAll(header, list);
@@ -782,7 +775,10 @@ public class Player_Dashboard extends ScrollPane {
         text.getChildren().addAll(lTitle, lSub);
 
         row.getChildren().addAll(lIcon, text);
+        
         row.setOnMouseClicked(e -> onClick.run());
+        addSimpleHoverScaleAnimation(row);
+        
         return row;
     }
 
@@ -805,7 +801,9 @@ public class Player_Dashboard extends ScrollPane {
         HBox row = new HBox(12);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setCursor(Cursor.HAND);
-        row.setOnMouseClicked(e -> navigateAndUpdateSidebar("Community", new Community_Dashboard(mainLayout)));
+        
+        row.setOnMouseClicked(e -> navigateAndUpdateSidebar("Community", null));
+        addSimpleHoverScaleAnimation(row);
 
         StackPane avatar = createMiniAvatar(initials, "#475569", 35);
 
@@ -843,6 +841,18 @@ public class Player_Dashboard extends ScrollPane {
         avatar.getChildren().add(l);
         return avatar;
     }
+
+    // Standard scaling method that doesn't overwrite specific styles for complex cards
+    private void addSimpleHoverScaleAnimation(Node node) {
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
+        scaleIn.setToX(1.02);
+        scaleIn.setToY(1.02);
+
+        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
+        scaleOut.setToX(1.0);
+        scaleOut.setToY(1.0);
+
+        node.setOnMouseEntered(e -> scaleIn.playFromStart());
+        node.setOnMouseExited(e -> scaleOut.playFromStart());
+    }
 }
-
-

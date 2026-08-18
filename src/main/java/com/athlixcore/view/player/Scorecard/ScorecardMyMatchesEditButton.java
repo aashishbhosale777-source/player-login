@@ -1,5 +1,3 @@
-
-
 package com.athlixcore.view.player.Scorecard;
 
 import javafx.animation.ScaleTransition;
@@ -36,16 +34,11 @@ public class ScorecardMyMatchesEditButton {
     private int[] wickets = {0, 0};
     private int[] balls = {0, 0}; 
 
-    // --- DYNAMIC PLAYER STATS (Key: Player Name, Value: Stats Array) ---
-    // Batting Array: {runs, balls, 4s, 6s}
+    // --- DYNAMIC PLAYER STATS ---
     private Map<String, int[]> t1Batting = new LinkedHashMap<>();
     private Map<String, int[]> t2Batting = new LinkedHashMap<>();
-    
-    // Bowling Array: {balls, maidens, runs, wickets}
     private Map<String, int[]> t1Bowling = new LinkedHashMap<>();
     private Map<String, int[]> t2Bowling = new LinkedHashMap<>();
-
-    // Dismissals Map (Key: Batter Name, Value: Dismissal Text e.g. "b BowlerName")
     private Map<String, String> t1Dismissals = new LinkedHashMap<>();
     private Map<String, String> t2Dismissals = new LinkedHashMap<>();
 
@@ -55,6 +48,9 @@ public class ScorecardMyMatchesEditButton {
     private HBox timelineRow;
     private Label strikerStatsLbl, bowlerStatsLbl;
     private ComboBox<String> strikerCombo, bowlerCombo;
+
+    // Dynamic Player Display Labels inside Score Blocks
+    private Label t1PlayerInfoLbl, t2PlayerInfoLbl;
 
     public ScorecardMyMatchesEditButton(String matchTitle, String team1, String team2, Runnable onBackAction) {
         this.matchTitle = matchTitle;
@@ -108,7 +104,7 @@ public class ScorecardMyMatchesEditButton {
             updateScoreUI();
         });
 
-        // View Scorecard button (Passes ALL data including dismissals)
+        // View Scorecard button
         Button viewScorecardBtn = new Button("View Scorecard ➔");
         viewScorecardBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-radius: 8;");
         addHoverEffect(viewScorecardBtn, 1.02);
@@ -119,7 +115,7 @@ public class ScorecardMyMatchesEditButton {
                 runs, wickets, balls,
                 t1Batting, t2Batting,
                 t1Bowling, t2Bowling,
-                t1Dismissals, t2Dismissals, // Pass the dismissal maps
+                t1Dismissals, t2Dismissals,
                 () -> {
                     rootContainer.getChildren().setAll(mainScrollPane);
                 }
@@ -129,7 +125,7 @@ public class ScorecardMyMatchesEditButton {
 
         header.getChildren().addAll(backBtn, titleBox, spacer, switchInningsBtn, viewScorecardBtn);
 
-        // --- 2. LIVE SCORE OVERVIEW CARD ---
+        // --- 2. LIVE SCORE OVERVIEW CARD WITH BATTER & BOWLER NAMES ---
         HBox scoreOverview = new HBox(30);
         scoreOverview.setAlignment(Pos.CENTER);
         scoreOverview.setPadding(new Insets(25));
@@ -137,13 +133,17 @@ public class ScorecardMyMatchesEditButton {
 
         t1ScoreLbl = new Label("0/0"); t1OversLbl = new Label("(0.0 Ov)");
         t1BadgeBox = new VBox(createBattingBadge()); t1BadgeBox.setAlignment(Pos.CENTER);
-        VBox t1Box = buildTeamHeaderBlock(team1, t1ScoreLbl, t1OversLbl, t1BadgeBox);
+        t1PlayerInfoLbl = new Label("🏏 --");
+        t1PlayerInfoLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+        VBox t1Box = buildTeamHeaderBlock(team1, t1ScoreLbl, t1OversLbl, t1BadgeBox, t1PlayerInfoLbl);
 
         Label vsLbl = new Label("VS"); vsLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #cbd5e1;");
 
         t2ScoreLbl = new Label("Yet to bat"); t2OversLbl = new Label("");
         t2BadgeBox = new VBox(); t2BadgeBox.setAlignment(Pos.CENTER);
-        VBox t2Box = buildTeamHeaderBlock(team2, t2ScoreLbl, t2OversLbl, t2BadgeBox);
+        t2PlayerInfoLbl = new Label("");
+        t2PlayerInfoLbl.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+        VBox t2Box = buildTeamHeaderBlock(team2, t2ScoreLbl, t2OversLbl, t2BadgeBox, t2PlayerInfoLbl);
 
         scoreOverview.getChildren().addAll(t1Box, vsLbl, t2Box);
 
@@ -169,7 +169,10 @@ public class ScorecardMyMatchesEditButton {
         strikerStatsLbl = new Label("Runs: 0 (0 balls)");
         strikerStatsLbl.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 12px;");
         strikerBox.getChildren().addAll(sLbl, strikerCombo, strikerStatsLbl);
-        strikerCombo.setOnAction(e -> updatePlayerStatsUI()); 
+        strikerCombo.setOnAction(e -> {
+            updatePlayerStatsUI();
+            updateScoreUI(); // Updates batter/bowler names in header block
+        }); 
 
         // Bowler
         VBox bowlerBox = new VBox(8);
@@ -181,7 +184,10 @@ public class ScorecardMyMatchesEditButton {
         bowlerStatsLbl = new Label("0.0 Overs | 0 Runs | 0 Wickets");
         bowlerStatsLbl.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold; -fx-font-size: 12px;");
         bowlerBox.getChildren().addAll(bLbl, bowlerCombo, bowlerStatsLbl);
-        bowlerCombo.setOnAction(e -> updatePlayerStatsUI());
+        bowlerCombo.setOnAction(e -> {
+            updatePlayerStatsUI();
+            updateScoreUI(); // Updates batter/bowler names in header block
+        });
 
         playerSelectionBox.getChildren().addAll(selectLbl, strikerBox, bowlerBox);
 
@@ -213,7 +219,6 @@ public class ScorecardMyMatchesEditButton {
         keypad.add(wicketBtn, 0, 3);
         addHoverEffect(wicketBtn, 1.02);
         
-        // Trigger Wicket Logic
         wicketBtn.setOnAction(e -> handleBallEvent(0, false, true, "W", "#fee2e2", "#dc2626"));
 
         keypadBox.getChildren().addAll(keypadLbl, keypad);
@@ -255,6 +260,7 @@ public class ScorecardMyMatchesEditButton {
         strikerCombo.getSelectionModel().selectFirst();
         bowlerCombo.getSelectionModel().selectFirst();
         updatePlayerStatsUI();
+        updateScoreUI();
     }
 
     // ==========================================
@@ -279,14 +285,11 @@ public class ScorecardMyMatchesEditButton {
 
         if (isWicket) {
             wickets[activeInning]++;
-            bStats[3]++; // bowler wicket
-            sStats[1]++; // striker ball
-            bStats[0]++; // bowler ball
+            bStats[3]++; 
+            sStats[1]++; 
+            bStats[0]++; 
             balls[activeInning]++;
-            
-            // Mark the striker as out with the bowler's name
             currentDisMap.put(striker, "b " + bowler);
-
         } else if (!isExtra) {
             balls[activeInning]++;
             bStats[0]++;
@@ -304,7 +307,6 @@ public class ScorecardMyMatchesEditButton {
         updateScoreUI();
         updatePlayerStatsUI();
         
-        // Update Timeline
         if (timelineRow.getChildren().size() >= 6) timelineRow.getChildren().remove(0);
         if (balls[activeInning] == 1 && !isExtra && timelineRow.getChildren().size() == 1) timelineRow.getChildren().clear();
         timelineRow.getChildren().add(createTimelineBall(labelStr, bgColor, textColor));
@@ -326,37 +328,64 @@ public class ScorecardMyMatchesEditButton {
     }
 
     private void updateScoreUI() {
+        String currentStriker = strikerCombo != null ? strikerCombo.getValue() : "--";
+        String currentBowler = bowlerCombo != null ? bowlerCombo.getValue() : "--";
+
         if (activeInning == 0) {
-            t1BadgeBox.getChildren().setAll(createBattingBadge()); t2BadgeBox.getChildren().clear();
-            t1ScoreLbl.setText(runs[0] + "/" + wickets[0]); t1ScoreLbl.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+            t1BadgeBox.getChildren().setAll(createBattingBadge()); 
+            t2BadgeBox.getChildren().clear();
+
+            t1ScoreLbl.setText(runs[0] + "/" + wickets[0]); 
+            t1ScoreLbl.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
             t1OversLbl.setText("(" + (balls[0]/6) + "." + (balls[0]%6) + " Ov)");
             
+            // Team 1 is batting -> Show Striker name under Team 1
+            t1PlayerInfoLbl.setText("🏏 " + (currentStriker != null ? currentStriker : ""));
+            t2PlayerInfoLbl.setText("⚾ " + (currentBowler != null ? currentBowler : ""));
+
             if (balls[1] == 0 && runs[1] == 0) {
-                t2ScoreLbl.setText("Yet to bat"); t2ScoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"); t2OversLbl.setText("");
+                t2ScoreLbl.setText("Yet to bat"); 
+                t2ScoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"); 
+                t2OversLbl.setText("");
             } else {
-                t2ScoreLbl.setText(runs[1] + "/" + wickets[1]); t2ScoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
+                t2ScoreLbl.setText(runs[1] + "/" + wickets[1]); 
+                t2ScoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
                 t2OversLbl.setText("(" + (balls[1]/6) + "." + (balls[1]%6) + " Ov)");
             }
         } else {
-            t2BadgeBox.getChildren().setAll(createBattingBadge()); t1BadgeBox.getChildren().clear();
-            t2ScoreLbl.setText(runs[1] + "/" + wickets[1]); t2ScoreLbl.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+            t2BadgeBox.getChildren().setAll(createBattingBadge()); 
+            t1BadgeBox.getChildren().clear();
+
+            t2ScoreLbl.setText(runs[1] + "/" + wickets[1]); 
+            t2ScoreLbl.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
             t2OversLbl.setText("(" + (balls[1]/6) + "." + (balls[1]%6) + " Ov)");
             
-            t1ScoreLbl.setText(runs[0] + "/" + wickets[0]); t1ScoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
+            // Team 2 is batting -> Show Striker name under Team 2, Bowler under Team 1
+            t2PlayerInfoLbl.setText("🏏 " + (currentStriker != null ? currentStriker : ""));
+            t1PlayerInfoLbl.setText("⚾ " + (currentBowler != null ? currentBowler : ""));
+            
+            t1ScoreLbl.setText(runs[0] + "/" + wickets[0]); 
+            t1ScoreLbl.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
             t1OversLbl.setText("(" + (balls[0]/6) + "." + (balls[0]%6) + " Ov)");
         }
     }
 
     // --- UI HELPERS ---
-    private VBox buildTeamHeaderBlock(String teamName, Label scoreLbl, Label oversLbl, VBox badgeBox) {
-        VBox box = new VBox(5); box.setAlignment(Pos.CENTER);
-        Label tName = new Label(teamName); tName.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #475569;");
-        scoreLbl.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"); oversLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
-        box.getChildren().addAll(badgeBox, tName, scoreLbl, oversLbl); return box;
+    private VBox buildTeamHeaderBlock(String teamName, Label scoreLbl, Label oversLbl, VBox badgeBox, Label playerInfoLbl) {
+        VBox box = new VBox(4); 
+        box.setAlignment(Pos.CENTER);
+        Label tName = new Label(teamName); 
+        tName.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #475569;");
+        scoreLbl.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"); 
+        oversLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #64748b;");
+        box.getChildren().addAll(badgeBox, tName, scoreLbl, oversLbl, playerInfoLbl); 
+        return box;
     }
 
     private Label createBattingBadge() {
-        Label b = new Label("▶ BATTING"); b.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 3 8; -fx-background-radius: 10;"); return b;
+        Label b = new Label("▶ BATTING"); 
+        b.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 3 8; -fx-background-radius: 10;"); 
+        return b;
     }
 
     private Button createScoreBtn(String text, int r, boolean ext, boolean wkt, String bg, String tc) {
