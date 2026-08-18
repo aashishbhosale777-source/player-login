@@ -1,11 +1,5 @@
-
-
 package com.athlixcore.view.player.Academy;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -26,7 +20,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,15 +47,6 @@ public class Academy_Dashboard {
             rootContainer.getChildren().add(mainScrollPane);
         }
         return rootContainer;
-    }
-
-    // Helper for smooth view switching
-    private void switchView(Node newView) {
-        newView.setOpacity(0);
-        rootContainer.getChildren().setAll(newView);
-        FadeTransition ft = new FadeTransition(Duration.millis(300), newView);
-        ft.setToValue(1.0);
-        ft.play();
     }
 
     private ScrollPane buildMainContent() {
@@ -105,6 +89,7 @@ public class Academy_Dashboard {
             
         statsGrid.add(createStatCard("Completed", "156", "⏱", 
             "-fx-background-color: linear-gradient(to right, #fffdf2, #fefce8); -fx-border-color: #fef08a;"), 1, 1);
+
 
         // --- 3. REFINE / FILTER BLOCK ---
         HBox filterBlock = new HBox(20);
@@ -222,8 +207,6 @@ public class Academy_Dashboard {
         card.setMinHeight(100);
         card.setStyle(customStyle + " -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
 
-        addHoverScale(card); // Add hover animation
-
         VBox leftContent = new VBox(8);
         leftContent.setAlignment(Pos.CENTER_LEFT);
         Label titleLbl = new Label(title);
@@ -273,24 +256,8 @@ public class Academy_Dashboard {
             noResultLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-padding: 40;");
             coachesGrid.getChildren().add(noResultLbl);
         } else {
-            // Apply cascading slide and fade animation to coach cards
-            int delay = 0;
             for (Coach coach : filteredList) {
-                VBox card = createCoachCard(coach);
-                card.setOpacity(0);
-                card.setTranslateY(20);
-                coachesGrid.getChildren().add(card);
-
-                FadeTransition ft = new FadeTransition(Duration.millis(400), card);
-                ft.setToValue(1.0);
-                TranslateTransition tt = new TranslateTransition(Duration.millis(400), card);
-                tt.setToY(0);
-
-                ParallelTransition pt = new ParallelTransition(ft, tt);
-                pt.setDelay(Duration.millis(delay));
-                pt.play();
-                
-                delay += 50; // cascade effect
+                coachesGrid.getChildren().add(createCoachCard(coach));
             }
         }
     }
@@ -306,10 +273,8 @@ public class Academy_Dashboard {
         if (isPurchased) {
             card.setStyle("-fx-background-color: #f0fdf4; -fx-background-radius: 12; -fx-border-color: #10b981; -fx-border-width: 2; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(16,185,129,0.25), 12, 0, 0, 4);");
         } else {
-            card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);");
+            card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;");
         }
-
-        addHoverScale(card); // Add hover animation
 
         // Avatar
         ImageView avatar = new ImageView();
@@ -370,17 +335,21 @@ public class Academy_Dashboard {
 
         actionBtn.setOnAction(e -> {
             if (isPurchased) {
-                switchView(buildDailyTasksView(coach));
+                // If purchased, clicking "Manage Sessions" opens the Daily Tasks view
+                rootContainer.getChildren().setAll(buildDailyTasksView(coach));
             } else {
+                // Otherwise, opens the normal profile view
                 Coach_Discovery profilePage = new Coach_Discovery(
                     coach.name, 
                     coach.specialty, 
                     coach.distanceText, 
                     coach.rating, 
                     coach.avatarUrl,
-                    () -> switchView(buildMainContent()) 
+                    () -> {
+                        rootContainer.getChildren().setAll(buildMainContent()); 
+                    }
                 );
-                switchView(profilePage.getView());
+                rootContainer.getChildren().setAll(profilePage.getView());
             }
         });
 
@@ -394,22 +363,22 @@ public class Academy_Dashboard {
         container.setPadding(new Insets(30, 40, 80, 40));
         container.setStyle("-fx-background-color: #f8fafc;");
 
-        // Top Navigation Bar
+        // Top Navigation Bar (Back & View Profile Buttons)
         HBox topNav = new HBox(15);
         topNav.setAlignment(Pos.CENTER_LEFT);
 
         Button backBtn = new Button("❮ Back to Academy");
         backBtn.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 18; -fx-background-radius: 20; -fx-border-color: #e2e8f0; -fx-border-radius: 20; -fx-cursor: hand;");
-        backBtn.setOnAction(e -> switchView(buildMainContent()));
+        backBtn.setOnAction(e -> rootContainer.getChildren().setAll(buildMainContent()));
 
         Button viewProfileBtn = new Button("👤 View Coach Profile");
         viewProfileBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 18; -fx-background-radius: 20; -fx-border-color: #cbd5e1; -fx-border-radius: 20; -fx-cursor: hand;");
         viewProfileBtn.setOnAction(e -> {
             Coach_Discovery profilePage = new Coach_Discovery(
                 coach.name, coach.specialty, coach.distanceText, coach.rating, coach.avatarUrl,
-                () -> switchView(buildDailyTasksView(coach))
+                () -> rootContainer.getChildren().setAll(buildDailyTasksView(coach))
             );
-            switchView(profilePage.getView());
+            rootContainer.getChildren().setAll(profilePage.getView());
         });
 
         Region navSpacer = new Region();
@@ -434,30 +403,12 @@ public class Academy_Dashboard {
 
         // Task Cards List Container
         VBox taskList = new VBox(15);
-        Node[] tasks = {
+        taskList.getChildren().addAll(
             createTaskCard("🌅 Morning Warmup & Mobility", "15 minutes dynamic stretching, shoulder rotations, and core activation.", "08:00 AM", true),
             createTaskCard("🏏 Technical Net Practice", "Focus on defensive stance and power hitting against off-spin deliveries (50 balls).", "10:30 AM", false),
             createTaskCard("💪 Strength & Conditioning", "Lower body focus: Squats (3 sets x 12 reps), lunges, and agility ladder drills.", "04:00 PM", false),
             createTaskCard("📊 Video Analysis & Review", "Review match footage with " + coach.name + " to analyze trigger movements.", "07:00 PM", false)
-        };
-
-        // Animate tasks sliding in
-        int delay = 0;
-        for (Node task : tasks) {
-            task.setOpacity(0);
-            task.setTranslateX(-20);
-            taskList.getChildren().add(task);
-
-            FadeTransition ft = new FadeTransition(Duration.millis(400), task);
-            ft.setToValue(1.0);
-            TranslateTransition tt = new TranslateTransition(Duration.millis(400), task);
-            tt.setToX(0);
-
-            ParallelTransition pt = new ParallelTransition(ft, tt);
-            pt.setDelay(Duration.millis(delay));
-            pt.play();
-            delay += 100;
-        }
+        );
 
         container.getChildren().addAll(topNav, banner, taskList);
 
@@ -474,8 +425,6 @@ public class Academy_Dashboard {
         card.setAlignment(Pos.CENTER_LEFT);
         card.setPadding(new Insets(20, 25, 20, 25));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 2);");
-
-        addHoverScale(card); // Add hover animation
 
         CheckBox checkBox = new CheckBox();
         checkBox.setSelected(isCompleted);
@@ -498,20 +447,6 @@ public class Academy_Dashboard {
 
         card.getChildren().addAll(checkBox, textContent, timeLbl);
         return card;
-    }
-
-    // Hover Animation Helper
-    private void addHoverScale(Node node) {
-        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(150), node);
-        scaleIn.setToX(1.02); 
-        scaleIn.setToY(1.02);
-        
-        ScaleTransition scaleOut = new ScaleTransition(Duration.millis(150), node);
-        scaleOut.setToX(1.0); 
-        scaleOut.setToY(1.0);
-
-        node.setOnMouseEntered(e -> scaleIn.playFromStart());
-        node.setOnMouseExited(e -> scaleOut.playFromStart());
     }
 
     private void initializeDummyData() {

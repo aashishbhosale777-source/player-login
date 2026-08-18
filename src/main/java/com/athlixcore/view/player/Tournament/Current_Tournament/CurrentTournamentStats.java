@@ -53,7 +53,7 @@ public class CurrentTournamentStats {
 
         // Player Image
         ImageView profileImg = new ImageView();
-        try { Image img = new Image("https://dummyimage.com/150x150/cbd5e1/0f172a.png&text=" + playerName.substring(0, 2).toUpperCase(), true); profileImg.setImage(img); } catch (Exception e) {}
+        try { Image img = new Image("/assests/images/CurrentTournamentSquad1.png" + playerName.substring(0, 2).toUpperCase(), true); profileImg.setImage(img); } catch (Exception e) {}
         profileImg.setFitWidth(120);
         profileImg.setFitHeight(120);
         profileImg.setPreserveRatio(true);
@@ -122,3 +122,4 @@ public class CurrentTournamentStats {
         return section;
     }
 }
+

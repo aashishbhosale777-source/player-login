@@ -1,10 +1,7 @@
 package com.athlixcore.view.player.Tournament.Completed_Tournament;
 
-import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournament;
 import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamentOCap;
-
-
-// import com.athlix.view.Tournament.Current_Tournament.CurrentTournamentOCap;
+import com.athlixcore.view.player.Tournament.Current_Tournament.CurrentTournamentPCap;
 
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
@@ -72,7 +69,7 @@ public class CompletedTournamentonviewTournament {
         CurrentTournamentOCap oCapPage = new CurrentTournamentOCap();
         Node orangeCapView = oCapPage.getView();
 
-        CurrentTournament pCapPage = new CurrentTournament();
+        CurrentTournamentPCap pCapPage = new CurrentTournamentPCap();
         Node purpleCapView = pCapPage.getView();
 
         contentArea.getChildren().add(completedMatchesView);

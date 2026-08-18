@@ -1,4 +1,3 @@
-
 package com.athlixcore.view.player.Training_Fitness;
 
 import javafx.animation.FadeTransition;
@@ -13,7 +12,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -31,6 +29,9 @@ public class Traning_dashboard {
     private Button trainingTabBtn;
     private Button fitnessTabBtn;
 
+    // --- SMART ROUTING FLAG FROM DASHBOARD ---
+    public static boolean showFitnessFirst = false;
+
     // --- ANTI-SPAM FLAG ---
     private boolean isTransitioning = false;
 
@@ -39,36 +40,27 @@ public class Traning_dashboard {
             rootContainer = new BorderPane();
             rootContainer.setStyle("-fx-background-color: #f8fafc;");
 
+            // Create the fixed Top Bar (Search + Training/Fitness Toggle + Profile)
             Node topBar = buildTopBar();
             rootContainer.setTop(topBar);
 
+            // Create the dynamic Content Area for switching between Training & Fitness
             contentArea = new StackPane();
             rootContainer.setCenter(contentArea);
 
-            loadTrainingView();
+            // Detect routing direction state flag
+            if (showFitnessFirst) {
+                styleMainToggleButton(trainingTabBtn, false);
+                styleMainToggleButton(fitnessTabBtn, true);
+                loadFitnessView();
+                showFitnessFirst = false; // Reset to default state
+            } else {
+                styleMainToggleButton(trainingTabBtn, true);
+                styleMainToggleButton(fitnessTabBtn, false);
+                loadTrainingView();
+            }
         }
         return rootContainer;
-    }
-
-    // --- SYNCHRONOUS AVATAR LOADER (Fixes "Image not yet loaded" error) ---
-    private Image loadAvatarImage() {
-        String imagePath = "/assests/images/Virat.jpg";
-        try {
-            // Try Classpath stream first
-            InputStream stream = getClass().getResourceAsStream(imagePath);
-            if (stream != null) {
-                return new Image(stream); // Synchronous load
-            } else {
-                // VS Code Fallback: Read directly from File System
-                File file = new File("src/main/resources" + imagePath);
-                if (file.exists()) {
-                    return new Image(file.toURI().toString()); // Synchronous load
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Exception loading avatar: " + imagePath);
-        }
-        return null; 
     }
 
     // --- ANIMATION HELPERS ---
@@ -104,6 +96,25 @@ public class Traning_dashboard {
         });
     }
 
+    // --- SYNCHRONOUS AVATAR LOADER ---
+    private Image loadAvatarImage() {
+        String imagePath = "/assests/images/Virat.jpg";
+        try {
+            InputStream stream = getClass().getResourceAsStream(imagePath);
+            if (stream != null) {
+                return new Image(stream); 
+            } else {
+                File file = new File("src/main/resources" + imagePath);
+                if (file.exists()) {
+                    return new Image(file.toURI().toString());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Exception loading avatar: " + imagePath);
+        }
+        return null; 
+    }
+
     // --- MAIN TOP BAR WITH TRAINING / FITNESS TOGGLE ---
     private HBox buildTopBar() {
         HBox topBar = new HBox(25);
@@ -135,9 +146,6 @@ public class Traning_dashboard {
         trainingTabBtn = new Button("Training");
         fitnessTabBtn = new Button("Fitness");
 
-        styleMainToggleButton(trainingTabBtn, true);
-        styleMainToggleButton(fitnessTabBtn, false);
-
         trainingTabBtn.setOnAction(e -> {
             if (isTransitioning) return;
             styleMainToggleButton(trainingTabBtn, true);
@@ -146,7 +154,7 @@ public class Traning_dashboard {
         });
 
         fitnessTabBtn.setOnAction(e -> {
-            if (isTransitioning) return; 
+            if (isTransitioning) return;
             styleMainToggleButton(fitnessTabBtn, true);
             styleMainToggleButton(trainingTabBtn, false);
             loadFitnessView();
@@ -154,7 +162,7 @@ public class Traning_dashboard {
 
         toggleContainer.getChildren().addAll(trainingTabBtn, fitnessTabBtn);
 
-        // Avatar (Top Bar)
+        // Avatar
         Circle avatar = new Circle(20);
         Image avatarImg = loadAvatarImage();
         if (avatarImg != null) {
@@ -214,7 +222,7 @@ public class Traning_dashboard {
         isTransitioning = true;
         Fitness_Dashboard fitnessPage = new Fitness_Dashboard();
         contentArea.getChildren().setAll(fitnessPage.getView());
-
+        
         contentArea.setOpacity(0);
         FadeTransition ft = new FadeTransition(Duration.millis(400), contentArea);
         ft.setToValue(1.0);
@@ -241,14 +249,12 @@ public class Traning_dashboard {
         outerRing.setStrokeWidth(3);
         Circle innerAvatar = new Circle(55);
         
-        // Avatar (Hero Banner)
         Image heroAvatarImg = loadAvatarImage();
         if (heroAvatarImg != null) {
             innerAvatar.setFill(new javafx.scene.paint.ImagePattern(heroAvatarImg));
         } else {
             innerAvatar.setFill(Color.DARKGRAY);
         }
-        
         avatarRing.getChildren().addAll(outerRing, innerAvatar);
         addHoverScale(avatarRing);
 
@@ -282,9 +288,6 @@ public class Traning_dashboard {
         addHoverScale(startBtn);
         
         startBtn.setOnAction(e -> {
-            if (isTransitioning) return;
-            isTransitioning = true;
-            
             Training_StartButton startPage = new Training_StartButton(() -> {
                 loadTrainingView();
             });
@@ -292,7 +295,6 @@ public class Traning_dashboard {
             contentArea.setOpacity(0);
             FadeTransition ft = new FadeTransition(javafx.util.Duration.millis(400), contentArea);
             ft.setToValue(1.0);
-            ft.setOnFinished(evt -> isTransitioning = false);
             ft.play();
         });
         
@@ -443,31 +445,25 @@ public class Traning_dashboard {
         HBox cardsContainer = new HBox(15);
         for(Node n : cardsContainer.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
 
-        // Load Default Tab (Batting)
         setTabActiveState(batTab, true);
         setTabActiveState(bowlTab, false);
         setTabActiveState(fieldTab, false);
         setTabActiveState(keepTab, false);
         loadSkillCards(cardsContainer, "Batting");
 
-        // Set Tab Actions
         batTab.setOnMouseClicked(e -> {
-            if (isTransitioning) return;
             setTabActiveState(batTab, true); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
             loadSkillCards(cardsContainer, "Batting");
         });
         bowlTab.setOnMouseClicked(e -> {
-            if (isTransitioning) return;
             setTabActiveState(batTab, false); setTabActiveState(bowlTab, true); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, false);
             loadSkillCards(cardsContainer, "Bowling");
         });
         fieldTab.setOnMouseClicked(e -> {
-            if (isTransitioning) return;
             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, true); setTabActiveState(keepTab, false);
             loadSkillCards(cardsContainer, "Fielding");
         });
         keepTab.setOnMouseClicked(e -> {
-            if (isTransitioning) return;
             setTabActiveState(batTab, false); setTabActiveState(bowlTab, false); setTabActiveState(fieldTab, false); setTabActiveState(keepTab, true);
             loadSkillCards(cardsContainer, "Keeper");
         });
@@ -491,27 +487,28 @@ public class Traning_dashboard {
     }
 
     private void loadSkillCards(HBox container, String category) {
-        isTransitioning = true; // Lock clicks until transition finishes
         container.getChildren().clear();
         StackPane card1, card2;
         
+        String localImagePath = "file:src/main/resources/assests/images/Stadium1.jpg";
+        String localImagePath1 = "file:src/main/resources/assests/images/ball3.jpg";
+        
         switch (category) {
             case "Bowling":
-                card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", "/assests/images/ground1.png");
-                card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", "/assests/images/ground2.png");
+                card1 = createVideoCard("Inswing Mechanics", "3 Sets x 12 Reps", "⭐ Coach Choice", localImagePath);
+                card2 = createVideoCard("Yorker Accuracy", "4 Sets x 15 Reps", "⏱ Last: 7.5/10", localImagePath1);
                 break;
             case "Fielding":
-                card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=200&fit=crop");
-                card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", "https://images.unsplash.com/photo-1593786480164-9a3b68074d6c?w=400&h=200&fit=crop");
+                card1 = createVideoCard("Diving Interceptions", "5 Sets x 10 Reps", "🔥 High Intensity", localImagePath);
+                card2 = createVideoCard("Direct Hit Drills", "3 Sets x 20 Reps", "⏱ Last: 9/10", localImagePath);
                 break;
             case "Keeper":
-                card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", "https://images.unsplash.com/photo-1550262174-cb233d596645?w=400&h=200&fit=crop");
-                card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", "https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=400&h=200&fit=crop");
+                card1 = createVideoCard("Spin Reaction Drills", "4 Sets x 30 Reps", "⭐ Coach Choice", localImagePath);
+                card2 = createVideoCard("Leg-side Diving", "3 Sets x 15 Reps", "⏱ Last: 8/10", localImagePath);
                 break;
-            case "Batting":
-            default:
-                card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", "/assests/images/stadium.jpg"); 
-                card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", "/assests/images/ground1.png"); 
+            default: // Batting
+                card1 = createVideoCard("Cover Drive Fundamentals", "4 Sets x 15 Reps", "⭐ Coach Choice", localImagePath);
+                card2 = createVideoCard("Straight Drive Control", "3 Sets x 20 Reps", "⏱ Last: 8.5/10", localImagePath);
                 break;
         }
 
@@ -522,60 +519,19 @@ public class Traning_dashboard {
         container.setOpacity(0);
         FadeTransition ft = new FadeTransition(Duration.millis(300), container);
         ft.setToValue(1.0);
-        ft.setOnFinished(e -> isTransitioning = false); // Release lock
         ft.play();
     }
 
-    // === BULLETPROOF IMAGEVIEW LOADER ===
-    private StackPane createVideoCard(String title, String sub, String tag, String imagePath) {
+    private StackPane createVideoCard(String title, String sub, String tag, String localImagePath) {
         StackPane card = new StackPane();
         card.setMinHeight(160);
-        card.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);");
-
-        ImageView imageView = new ImageView();
         
-        if (imagePath != null && !imagePath.isEmpty()) {
-            try {
-                Image img = null;
-                if (imagePath.startsWith("http")) {
-                    img = new Image(imagePath, true);
-                } else {
-                    InputStream stream = getClass().getResourceAsStream(imagePath);
-                    if (stream != null) {
-                        img = new Image(stream);
-                    } else {
-                        String cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
-                        File file = new File("src/main/resources/" + cleanPath);
-                        if (file.exists()) {
-                            img = new Image(file.toURI().toString());
-                        } else {
-                            System.out.println("Could not find image -> " + file.getAbsolutePath());
-                        }
-                    }
-                }
-                
-                if (img != null) {
-                    imageView.setImage(img);
-                }
-            } catch (Exception e) {
-                System.out.println("Exception loading photo: " + imagePath);
-            }
-        }
+        String style = "-fx-background-color: #cbd5e1; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4);";
+        style += "-fx-background-image: url('" + localImagePath + "'); -fx-background-size: cover; -fx-background-position: center center; -fx-background-radius: 12;";
         
-        imageView.fitWidthProperty().bind(card.widthProperty());
-        imageView.fitHeightProperty().bind(card.heightProperty());
-        imageView.setPreserveRatio(false); 
-
-        Rectangle clip = new Rectangle();
-        clip.widthProperty().bind(card.widthProperty());
-        clip.heightProperty().bind(card.heightProperty());
-        clip.setArcWidth(24); 
-        clip.setArcHeight(24);
-        imageView.setClip(clip);
-
+        card.setStyle(style);
         addHoverScale(card);
 
-        // Dark gradient overlay so text remains readable
         Region overlay = new Region();
         overlay.setStyle("-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.85), transparent); -fx-background-radius: 12;");
 
@@ -591,7 +547,7 @@ public class Traning_dashboard {
         tg.setStyle("-fx-text-fill: #34d399; -fx-font-size: 11px; -fx-font-weight: bold;");
         
         content.getChildren().addAll(t, s, tg);
-        card.getChildren().addAll(imageView, overlay, content);
+        card.getChildren().addAll(overlay, content);
         return card;
     }
 
@@ -599,7 +555,7 @@ public class Traning_dashboard {
     private VBox buildAnalyticsSection() {
         VBox box = new VBox(20);
         box.setPadding(new Insets(25));
-        box.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);");
+        box.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropsShadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);");
         addHoverScale(box);
 
         Label title = new Label("Skill Development Analytics");

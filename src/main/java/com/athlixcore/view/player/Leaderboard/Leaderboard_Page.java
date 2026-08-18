@@ -40,7 +40,7 @@ public class Leaderboard_Page extends StackPane {
         // --- LAYER 1: STADIUM BACKGROUND IMAGE ---
         ImageView bgImage = new ImageView();
         try {
-            java.io.File file = new java.io.File("src/main/resources/assests/images/stadium.jpg");
+            java.io.File file = new java.io.File("");
             
             if (file.exists()) {
                 String bgPath = file.toURI().toString();
@@ -545,3 +545,4 @@ public class Leaderboard_Page extends StackPane {
         return container;
     }
 }
+
